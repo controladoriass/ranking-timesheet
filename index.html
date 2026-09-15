@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<title>Ranking de Evolução · Timesheet</title>
+<title>Desempenho no Timesheet · Silva & Silva</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -47,9 +47,14 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
 .card-h .badge .bl{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);font-weight:700;margin-top:4px}
 .card-b{padding:6px 22px 26px;overflow-y:auto;flex:1}
 
+/* mini meses inline */
+.mmini{display:flex;gap:10px;justify-content:flex-end;font-size:11px;color:var(--ink3);font-weight:500;white-space:nowrap}
+.mmini span{background:var(--bg2);border-radius:6px;padding:2px 7px}
+.mmini b{color:var(--navy);font-weight:700}
+
 /* sector rows (card principal) */
 .slist{display:flex;flex-direction:column}
-.srow{display:grid;grid-template-columns:34px 1fr 120px 92px 20px;align-items:center;gap:14px;padding:15px 12px;border-bottom:1px solid var(--line2);cursor:pointer;transition:.14s;border-radius:10px}
+.srow{display:grid;grid-template-columns:34px 1fr auto 96px 84px 20px;align-items:center;gap:14px;padding:14px 12px;border-bottom:1px solid var(--line2);cursor:pointer;transition:.14s;border-radius:10px}
 .srow:last-child{border-bottom:0}
 .srow:hover{background:var(--bg2)}
 .srow:hover .go{color:var(--gold)}
@@ -80,7 +85,7 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
 .prow .pevo.up{color:var(--up)} .prow .pevo.down{color:var(--down)} .prow .pevo.flat{color:var(--flat)}
 .prow .estreia{font-size:10px;font-weight:700;color:var(--gold2);background:rgba(201,162,39,.1);border:1px solid rgba(201,162,39,.3);border-radius:20px;padding:3px 9px}
 .emptyp{color:var(--ink3);font-size:13px;text-align:center;padding:40px 10px;font-weight:500}
-.prow{cursor:pointer}
+.prow{cursor:pointer;grid-template-columns:32px 1fr auto auto 70px !important}
 .prow:hover{background:var(--bg2)}
 /* status pill atual da pessoa */
 .spill{font-size:9.5px;font-weight:800;letter-spacing:.03em;padding:3px 8px;border-radius:20px;white-space:nowrap;text-transform:uppercase}
@@ -146,7 +151,7 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
 
   <div class="pagehead">
     <div class="eyebrow">Destaque</div>
-    <h1>Ranking de Evolução · Timesheet</h1>
+    <h1>Desempenho no Timesheet · por Setor</h1>
     <div class="rule"></div>
   </div>
 
@@ -181,9 +186,10 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
 <script>
 (function(){
   const D = window.TIMESHEET_DATA;
-  const M1='Julho', M2='Setembro';
-  const clsv = v => v>1 ? 'up' : (v<-1 ? 'down' : 'flat');
-  const fmtVar = v => (v>0?'+':'')+Math.round(v)+'%';
+  const MESES3 = ['Julho','Agosto','Setembro'];
+  const fmtPct = v => Math.round(v)+'%';
+  // média dos 3 meses = desempenho médio
+  function mediaDe(pct){ return (pct.Julho+pct.Agosto+pct.Setembro)/3; }
 
   // status pela régua (% já é sobre a meta individual, cortes iguais p/ todos)
   function statusOf(p){
@@ -201,97 +207,86 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
     <div class="lg"><span class="dot" style="background:#2e9e6b"></span><b>Adequado</b><span>97,5–107%</span></div>
     <div class="lg"><span class="dot" style="background:#157a4c"></span><b>Estendido</b><span>107–128%</span></div>
     <div class="lg"><span class="dot" style="background:#c9a227"></span><b>Excedente</b><span>&gt;128,6%</span></div>
-    <div class="lg" style="margin-left:auto;color:var(--ink3)"><span>% sobre a meta individual · adv. 7h/dia · estag. 5h/dia</span></div>
+    <div class="lg" style="margin-left:auto;color:var(--ink3)"><span>média dos 3 meses (jul·ago·set) do % da meta individual · adv. 7h/dia · estag. 5h/dia</span></div>
   </div>`;
-
-  function varOf(j,s){ // retorna {varp, estreante}
-    // quem parte de <10% da meta em julho é "novo/estreante" (variação % explode e não representa evolução real)
-    if(j>=10) return {varp:(s-j)/j*100, estreante:false};
-    return {varp:null, estreante:true};
-  }
 
   function sectorData(){
     let arr=[];
     for(const [nome,v] of Object.entries(D.setores)){
       if((v.Julho+v.Agosto+v.Setembro)===0) continue;
-      const {varp,estreante}=varOf(v[M1],v[M2]);
-      arr.push({nome,n:v.n,j:v[M1],s:v[M2],varp,estreante});
+      const med=mediaDe(v);
+      arr.push({nome,n:v.n,jul:v.Julho,ago:v.Agosto,set:v.Setembro,media:med});
     }
-    arr.sort((a,b)=>{
-      if(a.estreante&&b.estreante) return b.s-a.s;
-      if(a.estreante) return -1; if(b.estreante) return 1;
-      return b.varp-a.varp;
-    });
+    arr.sort((a,b)=> b.media-a.media);
     return arr;
   }
   function peopleOf(area){
     let arr=Object.entries(D.colaboradores).filter(([n,v])=>v.area===area).map(([n,v])=>{
-      const {varp,estreante}=varOf(v.pct[M1],v.pct[M2]);
-      return {nome:n,cargo:v.cargo,j:v.pct[M1],s:v.pct[M2],varp,estreante};
+      const med=mediaDe(v.pct);
+      return {nome:n,cargo:v.cargo,jul:v.pct.Julho,ago:v.pct.Agosto,set:v.pct.Setembro,media:med};
     });
-    arr.sort((a,b)=>{
-      if(a.estreante&&b.estreante) return b.s-a.s;
-      if(a.estreante) return -1; if(b.estreante) return 1;
-      return b.varp-a.varp;
-    });
+    arr.sort((a,b)=> b.media-a.media);
     return arr;
   }
 
   const SECTORS = sectorData();
-  const maxAbs=(()=>{let mx=1;SECTORS.forEach(s=>{if(!s.estreante)mx=Math.max(mx,Math.abs(s.varp));});return mx;})();
+  const maxMedia=Math.max(100,...SECTORS.map(s=>s.media));
 
   // ---- montar slides: [principal] + [um por setor] ----
   const track=document.getElementById('track');
   const slidesMeta=[{type:'principal'}].concat(SECTORS.map(s=>({type:'setor',area:s.nome})));
 
+  function mesesInline(jul,ago,set){
+    return `<div class="mmini">
+      <span>J <b>${jul.toFixed(0)}</b></span>
+      <span>A <b>${ago.toFixed(0)}</b></span>
+      <span>S <b>${set.toFixed(0)}*</b></span>
+    </div>`;
+  }
   function principalHTML(){
     const rows=SECTORS.map((s,i)=>{
-      const k=s.estreante?'up':clsv(s.varp);
-      const w=s.estreante?100:Math.max(5,Math.abs(s.varp)/maxAbs*100);
-      const evo=s.estreante?'<span class="estreia">estreou</span>'
-        :`<div class="evo ${k}">${fmtVar(s.varp)}<small>jul → set</small></div>`;
-      return `<div class="srow ${k} r${i+1}" data-idx="${i+1}">
+      const st=statusOf(s.media);
+      const w=Math.max(5,s.media/maxMedia*100);
+      return `<div class="srow r${i+1}" data-idx="${i+1}">
         <div class="pos">${i+1}</div>
         <div class="sinfo"><div class="sname">${s.nome}</div>
-          <div class="ssub">${s.n} pessoa(s) · ${s.j.toFixed(0)}% → ${s.s.toFixed(0)}% da meta</div></div>
-        <div class="track2"><i style="width:${w}%"></i></div>
-        ${evo}
+          <div class="ssub">${s.n} pessoa(s) · média dos 3 meses</div></div>
+        ${mesesInline(s.jul,s.ago,s.set)}
+        <div class="track2"><i style="width:${w}%;background:linear-gradient(90deg,${statusColor(st.k)}bb,${statusColor(st.k)})"></i></div>
+        <div class="evo" style="color:${statusColor(st.k)}">${fmtPct(s.media)}<small>média</small></div>
         <div class="go">›</div>
       </div>`;
     }).join('');
     return `<div class="card">
       <div class="card-h"><div class="htext">
         <div class="eyebrow">Card principal · por setor</div>
-        <h2>Qual setor mais evoluiu</h2>
-        <div class="desc">Crescimento do % da meta de julho (01/07) até a data de corte (13/09). Clique num setor para abrir o card dele.</div>
+        <h2>Desempenho médio por setor</h2>
+        <div class="desc">Média do % da meta nos 3 meses (jul · ago · set, até 13/09). Clique num setor para abrir o card dele.</div>
       </div></div>
       <div class="card-b"><div class="slist">${rows}</div></div>
+      ${LEGEND}
     </div>`;
   }
 
   function setorHTML(area){
     const s=SECTORS.find(x=>x.nome===area);
     const ppl=peopleOf(area);
-    const bk=s.estreante?'up':clsv(s.varp);
-    const badge=s.estreante
-      ? `<div class="bv up">novo</div><div class="bl">estreou</div>`
-      : `<div class="bv ${bk}">${fmtVar(s.varp)}</div><div class="bl">jul → set</div>`;
+    const bst=statusOf(s.media);
+    const badge=`<div class="bv" style="color:${statusColor(bst.k)}">${fmtPct(s.media)}</div><div class="bl">média 3 meses</div>`;
     const rows = ppl.length ? ppl.map((p,i)=>{
-      const k=p.estreante?'up':clsv(p.varp);
-      const evo=p.estreante?'<span class="estreia">estreou</span>':`<div class="pevo ${k}">${fmtVar(p.varp)}</div>`;
-      const st=statusOf(p.s); // status pelo mês atual (setembro)
+      const st=statusOf(p.media); // status pela MÉDIA dos 3 meses
       return `<div class="prow r${i+1}" data-nome="${encodeURIComponent(p.nome)}"><div class="ppos">${i+1}</div>
         <div class="pname">${p.nome}<small>${p.cargo||''}</small></div>
-        <div class="ppct"><span class="a">${p.j.toFixed(0)}%</span> → <b>${p.s.toFixed(0)}%</b></div>
+        ${mesesInline(p.jul,p.ago,p.set)}
         <span class="spill ${st.k}">${st.t}</span>
-        ${evo}</div>`;
+        <div class="pevo" style="color:${statusColor(st.k)}">${fmtPct(p.media)}</div></div>`;
     }).join('') : '<div class="emptyp">Sem colaboradores com registro neste setor.</div>';
     return `<div class="card">
       <div class="card-h">
         <div class="htext">
           <div class="eyebrow">Setor</div>
           <h2>${area}</h2>
-          <div class="desc">Ordenado por evolução (jul → set) · ${s.n} pessoa(s) · clique numa pessoa para ver semana a semana</div>
+          <div class="desc">Desempenho médio (jul · ago · set) · ${s.n} pessoa(s) · clique numa pessoa para ver semana a semana</div>
         </div>
         <div class="badge">${badge}</div>
       </div>
