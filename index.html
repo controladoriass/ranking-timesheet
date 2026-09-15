@@ -21,37 +21,38 @@ html,body{height:100%}
 body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:var(--ink);font-family:'Montserrat',system-ui,Arial,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column}
 .stage{flex:1;display:flex;flex-direction:column;width:100%;max-width:1280px;margin:0 auto;padding:clamp(20px,3vw,40px) clamp(14px,2.5vw,30px)}
 
-/* header estilo foto */
 .pagehead{text-align:center;margin-bottom:6px}
-.pagehead .n{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;color:var(--gold);font-weight:800;font-size:12px;margin-bottom:8px}
 .pagehead .eyebrow{font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:10px}
-.pagehead h1{font-size:clamp(26px,4vw,40px);font-weight:800;letter-spacing:-.015em;color:var(--navy)}
+.pagehead h1{font-size:clamp(24px,3.6vw,38px);font-weight:800;letter-spacing:-.015em;color:var(--navy)}
 .pagehead .rule{width:120px;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:16px auto 0}
 
-/* carousel com laterais espiando */
 .carousel{position:relative;flex:1;display:flex;align-items:center;justify-content:center;margin-top:22px}
 .arw{flex:0 0 auto;width:48px;height:48px;border-radius:12px;background:var(--navy);border:0;color:#fff;font-size:22px;cursor:pointer;display:grid;place-items:center;transition:.18s;box-shadow:0 8px 20px rgba(22,50,79,.22);z-index:5}
 .arw:hover{background:#0f2439;transform:translateY(-1px)}
-.arw:disabled{opacity:.3;cursor:default}
 .viewport{flex:1;overflow:hidden;padding:22px clamp(10px,4vw,60px)}
 .track{display:flex;align-items:stretch;transition:transform .5s cubic-bezier(.5,.05,.2,1)}
 .slide{flex:0 0 100%;padding:0 14px;display:flex;transition:.5s;opacity:1}
-.slide.side{opacity:.42;filter:saturate(.7)}
+.slide.side{opacity:.4;filter:saturate(.7)}
 .slide .card{width:100%}
 
-.card{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden;min-height:520px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden;min-height:540px}
 .slide.side .card{box-shadow:var(--shadow-side);transform:scale(.94)}
-.card-h{padding:26px 30px 18px}
-.card-h .eyebrow{font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:8px}
-.card-h h2{font-size:clamp(19px,2.4vw,26px);font-weight:800;letter-spacing:-.01em;color:var(--navy);line-height:1.1}
-.card-h .desc{color:var(--ink3);font-size:12px;margin-top:8px;font-weight:500;line-height:1.5}
+.card-h{padding:24px 30px 16px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.card-h .htext .eyebrow{font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:8px}
+.card-h .htext h2{font-size:clamp(18px,2.3vw,25px);font-weight:800;letter-spacing:-.01em;color:var(--navy);line-height:1.1}
+.card-h .htext .desc{color:var(--ink3);font-size:12px;margin-top:8px;font-weight:500;line-height:1.5}
+.card-h .badge{flex:0 0 auto;text-align:center;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:10px 16px;min-width:96px}
+.card-h .badge .bv{font-weight:900;font-size:22px;font-variant-numeric:tabular-nums;line-height:1}
+.card-h .badge .bv.up{color:var(--up)} .card-h .badge .bv.down{color:var(--down)} .card-h .badge .bv.flat{color:var(--flat)}
+.card-h .badge .bl{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);font-weight:700;margin-top:4px}
 .card-b{padding:6px 22px 26px;overflow-y:auto;flex:1}
 
-/* sector rows */
+/* sector rows (card principal) */
 .slist{display:flex;flex-direction:column}
-.srow{display:grid;grid-template-columns:34px 1fr 130px 92px;align-items:center;gap:16px;padding:15px 12px;border-bottom:1px solid var(--line2);cursor:pointer;transition:.14s;border-radius:10px}
+.srow{display:grid;grid-template-columns:34px 1fr 120px 92px 20px;align-items:center;gap:14px;padding:15px 12px;border-bottom:1px solid var(--line2);cursor:pointer;transition:.14s;border-radius:10px}
 .srow:last-child{border-bottom:0}
 .srow:hover{background:var(--bg2)}
+.srow:hover .go{color:var(--gold)}
 .srow .pos{font-weight:800;font-size:16px;color:var(--ink3);text-align:center}
 .srow.r1 .pos{color:var(--gold)} .srow.r2 .pos{color:#b7a24f} .srow.r3 .pos{color:#c2b06b}
 .srow .sinfo .sname{font-weight:700;font-size:15.5px;color:var(--navy)}
@@ -60,52 +61,41 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
 .srow .track2 i{display:block;height:100%;border-radius:5px;background:linear-gradient(90deg,var(--gold2),var(--gold))}
 .srow.down .track2 i{background:linear-gradient(90deg,#c96b6b,#d15757)}
 .srow .evo{text-align:right;font-weight:800;font-size:18px;font-variant-numeric:tabular-nums}
-.srow .evo small{font-size:9.5px;font-weight:600;color:var(--ink3);display:block;margin-top:1px;letter-spacing:.02em}
+.srow .evo small{font-size:9.5px;font-weight:600;color:var(--ink3);display:block;margin-top:1px}
 .srow .evo.up{color:var(--up)} .srow .evo.down{color:var(--down)} .srow .evo.flat{color:var(--flat)}
 .srow .estreia{font-size:10px;font-weight:700;color:var(--gold2);background:rgba(201,162,39,.1);border:1px solid rgba(201,162,39,.3);border-radius:20px;padding:3px 10px;display:inline-block}
+.srow .go{color:var(--ink3);font-size:18px;text-align:center;transition:.14s}
 
-/* people drawer */
-.back{margin:2px 0 16px;background:#fff;border:1px solid var(--line);color:var(--ink2);font-family:inherit;font-weight:600;font-size:12px;padding:8px 14px;border-radius:10px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:.15s}
-.back:hover{border-color:var(--gold);color:var(--navy)}
-.phead{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);font-weight:700;margin:4px 0 12px 2px}
-.prow{display:grid;grid-template-columns:28px 1fr auto auto;align-items:center;gap:12px;padding:11px 12px;border-bottom:1px solid var(--line2)}
+/* people rows (cards de setor) */
+.prow{display:grid;grid-template-columns:32px 1fr auto auto;align-items:center;gap:12px;padding:12px 12px;border-bottom:1px solid var(--line2)}
 .prow:last-child{border-bottom:0}
-.prow .ppos{font-weight:800;color:var(--ink3);font-size:13px;text-align:center}
-.prow .pname{font-weight:600;font-size:13.5px;color:var(--navy)}
+.prow.r1,.prow.r2,.prow.r3{background:linear-gradient(90deg,rgba(201,162,39,.05),transparent)}
+.prow .ppos{font-weight:800;color:var(--ink3);font-size:14px;text-align:center}
+.prow.r1 .ppos{color:var(--gold)} .prow.r2 .ppos{color:#b7a24f} .prow.r3 .ppos{color:#c2b06b}
+.prow .pname{font-weight:600;font-size:14px;color:var(--navy)}
 .prow .pname small{display:block;color:var(--ink3);font-weight:500;font-size:11px;margin-top:1px}
 .prow .ppct{font-size:12px;color:var(--ink2);font-weight:500;white-space:nowrap}
 .prow .ppct .a{color:var(--ink3)} .prow .ppct b{color:var(--navy);font-weight:700}
-.prow .pevo{min-width:60px;text-align:right;font-weight:800;font-size:14px;font-variant-numeric:tabular-nums}
+.prow .pevo{min-width:62px;text-align:right;font-weight:800;font-size:15px;font-variant-numeric:tabular-nums}
 .prow .pevo.up{color:var(--up)} .prow .pevo.down{color:var(--down)} .prow .pevo.flat{color:var(--flat)}
-
-/* champion card */
-.champ{display:flex;flex-direction:column;align-items:center;text-align:center;padding:18px 20px 30px;gap:18px}
-.champ .crown{font-size:36px}
-.champ .cname{font-size:clamp(26px,4.4vw,40px);font-weight:900;letter-spacing:-.02em;color:var(--navy);line-height:1.05}
-.champ .cbig{font-size:clamp(42px,8vw,74px);font-weight:900;color:var(--up);font-variant-numeric:tabular-nums;line-height:1}
-.champ .cbig small{font-size:.32em;color:var(--ink3);font-weight:700;letter-spacing:.05em}
-.champ .cline{color:var(--ink2);font-size:14px;max-width:460px;line-height:1.65;font-weight:500}
-.champ .cline b{color:var(--navy);font-weight:700}
-.podium{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:100%;max-width:580px;margin-top:8px}
-.pod{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:16px 12px;display:flex;flex-direction:column;gap:6px}
-.pod .medal{font-size:22px}
-.pod .pn{font-weight:700;font-size:13px;color:var(--navy)}
-.pod .pv{font-weight:800;font-size:17px;color:var(--up);font-variant-numeric:tabular-nums}
-.pod .pa{font-size:10.5px;color:var(--ink3)}
-.pod.first{border-color:var(--gold);box-shadow:0 10px 26px rgba(201,162,39,.16)}
+.prow .estreia{font-size:10px;font-weight:700;color:var(--gold2);background:rgba(201,162,39,.1);border:1px solid rgba(201,162,39,.3);border-radius:20px;padding:3px 9px}
+.emptyp{color:var(--ink3);font-size:13px;text-align:center;padding:40px 10px;font-weight:500}
 
 /* dots */
-.dots{display:flex;gap:9px;justify-content:center;margin-top:22px}
-.dots .d{width:9px;height:9px;border-radius:50%;background:var(--line);cursor:pointer;transition:.16s;border:0}
+.dots{display:flex;gap:7px;justify-content:center;margin-top:20px;flex-wrap:wrap;max-width:900px;margin-left:auto;margin-right:auto}
+.dots .d{width:9px;height:9px;border-radius:50%;background:var(--line);cursor:pointer;transition:.16s;border:0;padding:0}
 .dots .d.on{background:var(--gold);width:26px;border-radius:6px}
+.dots .d.principal.on{background:var(--navy)}
 
 @media(max-width:720px){
   .viewport{padding:14px 4px}
-  .slide{flex-basis:100%;padding:0 6px}
+  .slide{padding:0 6px}
   .arw{width:40px;height:40px;font-size:18px}
-  .srow{grid-template-columns:30px 1fr 82px;gap:10px}
+  .card-h{flex-direction:column}
+  .card-h .badge{align-self:flex-start}
+  .srow{grid-template-columns:30px 1fr 82px 18px;gap:10px}
   .srow .track2{display:none}
-  .prow{grid-template-columns:24px 1fr auto}
+  .prow{grid-template-columns:26px 1fr auto}
   .prow .ppct{display:none}
 }
 </style>
@@ -122,33 +112,7 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
   <div class="carousel">
     <button class="arw" id="prev" aria-label="anterior">‹</button>
     <div class="viewport">
-      <div class="track" id="track">
-
-        <!-- SLIDE 1: setores -->
-        <div class="slide">
-          <div class="card">
-            <div class="card-h">
-              <div class="eyebrow">Por setor</div>
-              <h2>Qual setor mais evoluiu</h2>
-              <div class="desc">Crescimento do % da meta de julho até a data atual. Clique num setor para ver as pessoas.</div>
-            </div>
-            <div class="card-b" id="sectorBody"></div>
-          </div>
-        </div>
-
-        <!-- SLIDE 2: campeão -->
-        <div class="slide">
-          <div class="card">
-            <div class="card-h">
-              <div class="eyebrow">Destaque</div>
-              <h2>O setor que mais vem evoluindo</h2>
-              <div class="desc">Maior crescimento no período · tendência de subida do timesheet.</div>
-            </div>
-            <div class="card-b"><div class="champ" id="champBody"></div></div>
-          </div>
-        </div>
-
-      </div>
+      <div class="track" id="track"></div>
     </div>
     <button class="arw" id="next" aria-label="próximo">›</button>
   </div>
@@ -162,18 +126,20 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
 (function(){
   const D = window.TIMESHEET_DATA;
   const M1='Julho', M2='Setembro';
-
   const clsv = v => v>1 ? 'up' : (v<-1 ? 'down' : 'flat');
   const fmtVar = v => (v>0?'+':'')+Math.round(v)+'%';
+
+  function varOf(j,s){ // retorna {varp, estreante}
+    if(j>0.5) return {varp:(s-j)/j*100, estreante:false};
+    return {varp:null, estreante:true};
+  }
 
   function sectorData(){
     let arr=[];
     for(const [nome,v] of Object.entries(D.setores)){
       if((v.Julho+v.Agosto+v.Setembro)===0) continue;
-      const j=v[M1], s=v[M2];
-      let varp=null, estreante=false;
-      if(j>0.5) varp=(s-j)/j*100; else estreante=true;
-      arr.push({nome,n:v.n,j,s,varp,estreante});
+      const {varp,estreante}=varOf(v[M1],v[M2]);
+      arr.push({nome,n:v.n,j:v[M1],s:v[M2],varp,estreante});
     }
     arr.sort((a,b)=>{
       if(a.estreante&&b.estreante) return b.s-a.s;
@@ -184,10 +150,8 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
   }
   function peopleOf(area){
     let arr=Object.entries(D.colaboradores).filter(([n,v])=>v.area===area).map(([n,v])=>{
-      const j=v.pct[M1], s=v.pct[M2];
-      let varp=null,estreante=false;
-      if(j>0.5) varp=(s-j)/j*100; else estreante=true;
-      return {nome:n,cargo:v.cargo,j,s,varp,estreante};
+      const {varp,estreante}=varOf(v.pct[M1],v.pct[M2]);
+      return {nome:n,cargo:v.cargo,j:v.pct[M1],s:v.pct[M2],varp,estreante};
     });
     arr.sort((a,b)=>{
       if(a.estreante&&b.estreante) return b.s-a.s;
@@ -196,76 +160,100 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
     });
     return arr;
   }
-  const maxAbs=(()=>{let mx=1;sectorData().forEach(s=>{if(!s.estreante)mx=Math.max(mx,Math.abs(s.varp));});return mx;})();
 
-  function renderSectors(){
-    const arr=sectorData();
-    document.getElementById('sectorBody').innerHTML='<div class="slist">'+arr.map((s,i)=>{
+  const SECTORS = sectorData();
+  const maxAbs=(()=>{let mx=1;SECTORS.forEach(s=>{if(!s.estreante)mx=Math.max(mx,Math.abs(s.varp));});return mx;})();
+
+  // ---- montar slides: [principal] + [um por setor] ----
+  const track=document.getElementById('track');
+  const slidesMeta=[{type:'principal'}].concat(SECTORS.map(s=>({type:'setor',area:s.nome})));
+
+  function principalHTML(){
+    const rows=SECTORS.map((s,i)=>{
       const k=s.estreante?'up':clsv(s.varp);
       const w=s.estreante?100:Math.max(5,Math.abs(s.varp)/maxAbs*100);
       const evo=s.estreante?'<span class="estreia">estreou</span>'
         :`<div class="evo ${k}">${fmtVar(s.varp)}<small>jul → set</small></div>`;
-      return `<div class="srow ${k} r${i+1}" data-area="${encodeURIComponent(s.nome)}">
+      return `<div class="srow ${k} r${i+1}" data-idx="${i+1}">
         <div class="pos">${i+1}</div>
         <div class="sinfo"><div class="sname">${s.nome}</div>
           <div class="ssub">${s.n} pessoa(s) · ${s.j.toFixed(0)}% → ${s.s.toFixed(0)}% da meta</div></div>
         <div class="track2"><i style="width:${w}%"></i></div>
-        ${evo}</div>`;
-    }).join('')+'</div>';
-    document.querySelectorAll('#sectorBody .srow').forEach(r=>{
-      r.addEventListener('click',()=>openSector(decodeURIComponent(r.dataset.area)));
-    });
-  }
-  function openSector(area){
-    const ppl=peopleOf(area), body=document.getElementById('sectorBody');
-    body.innerHTML=`<button class="back" id="backBtn">‹ voltar aos setores</button>
-      <div class="phead">${area} · quem mais evoluiu (jul → set)</div>
-      ${ppl.map((p,i)=>{
-        const k=p.estreante?'up':clsv(p.varp);
-        const evo=p.estreante?'<span class="estreia">estreou</span>':`<div class="pevo ${k}">${fmtVar(p.varp)}</div>`;
-        return `<div class="prow"><div class="ppos">${i+1}</div>
-          <div class="pname">${p.nome}<small>${p.cargo||''}</small></div>
-          <div class="ppct"><span class="a">${p.j.toFixed(0)}%</span> → <b>${p.s.toFixed(0)}%</b></div>
-          ${evo}</div>`;
-      }).join('')}`;
-    document.getElementById('backBtn').addEventListener('click',renderSectors);
-    body.scrollTop=0;
-  }
-  function renderChamp(){
-    const arr=sectorData().filter(s=>!s.estreante);
-    const [top,p2,p3]=arr;
-    const podium=[top,p2,p3].filter(Boolean).map((s,i)=>{
-      const med=['🥇','🥈','🥉'][i];
-      return `<div class="pod ${i===0?'first':''}"><div class="medal">${med}</div>
-        <div class="pn">${s.nome}</div><div class="pv">${fmtVar(s.varp)}</div>
-        <div class="pa">${s.j.toFixed(0)}% → ${s.s.toFixed(0)}%</div></div>`;
+        ${evo}
+        <div class="go">›</div>
+      </div>`;
     }).join('');
-    document.getElementById('champBody').innerHTML=`
-      <div class="crown">👑</div>
-      <div class="cname">${top.nome}</div>
-      <div class="cbig">${fmtVar(top.varp)}<small> de crescimento</small></div>
-      <div class="cline">O setor <b>${top.nome}</b> saiu de <b>${top.j.toFixed(0)}%</b> da meta em julho para <b>${top.s.toFixed(0)}%</b> agora, a maior evolução do escritório no período.</div>
-      <div class="podium">${podium}</div>`;
+    return `<div class="card">
+      <div class="card-h"><div class="htext">
+        <div class="eyebrow">Card principal · por setor</div>
+        <h2>Qual setor mais evoluiu</h2>
+        <div class="desc">Crescimento do % da meta de julho até a data atual. Clique num setor para abrir o card dele.</div>
+      </div></div>
+      <div class="card-b"><div class="slist">${rows}</div></div>
+    </div>`;
   }
 
-  // carousel
-  const track=document.getElementById('track');
+  function setorHTML(area){
+    const s=SECTORS.find(x=>x.nome===area);
+    const ppl=peopleOf(area);
+    const bk=s.estreante?'up':clsv(s.varp);
+    const badge=s.estreante
+      ? `<div class="bv up">novo</div><div class="bl">estreou</div>`
+      : `<div class="bv ${bk}">${fmtVar(s.varp)}</div><div class="bl">jul → set</div>`;
+    const rows = ppl.length ? ppl.map((p,i)=>{
+      const k=p.estreante?'up':clsv(p.varp);
+      const evo=p.estreante?'<span class="estreia">estreou</span>':`<div class="pevo ${k}">${fmtVar(p.varp)}</div>`;
+      return `<div class="prow r${i+1}"><div class="ppos">${i+1}</div>
+        <div class="pname">${p.nome}<small>${p.cargo||''}</small></div>
+        <div class="ppct"><span class="a">${p.j.toFixed(0)}%</span> → <b>${p.s.toFixed(0)}%</b></div>
+        ${evo}</div>`;
+    }).join('') : '<div class="emptyp">Sem colaboradores com registro neste setor.</div>';
+    return `<div class="card">
+      <div class="card-h">
+        <div class="htext">
+          <div class="eyebrow">Setor</div>
+          <h2>${area}</h2>
+          <div class="desc">Quem mais evoluiu no setor · ${s.n} pessoa(s) · média ${s.j.toFixed(0)}% → ${s.s.toFixed(0)}% da meta</div>
+        </div>
+        <div class="badge">${badge}</div>
+      </div>
+      <div class="card-b">${rows}</div>
+    </div>`;
+  }
+
+  // render slides
+  track.innerHTML = slidesMeta.map(m=>{
+    const inner = m.type==='principal' ? principalHTML() : setorHTML(m.area);
+    return `<div class="slide">${inner}</div>`;
+  }).join('');
   const slides=[...document.querySelectorAll('.slide')];
-  let idx=0;
+
+  // dots
   const dots=document.getElementById('dots');
-  slides.forEach((_,i)=>{const b=document.createElement('button');b.className='d'+(i===0?' on':'');b.addEventListener('click',()=>go(i));dots.appendChild(b);});
+  slidesMeta.forEach((m,i)=>{
+    const b=document.createElement('button');
+    b.className='d'+(i===0?' principal on':'')+(m.type==='principal'?' principal':'');
+    b.title = m.type==='principal'?'Setor que mais evoluiu':m.area;
+    b.addEventListener('click',()=>go(i));
+    dots.appendChild(b);
+  });
+
+  let idx=0;
   function go(i){
     idx=(i+slides.length)%slides.length;
     track.style.transform=`translateX(-${idx*100}%)`;
     slides.forEach((s,k)=>s.classList.toggle('side',k!==idx));
     document.querySelectorAll('.dots .d').forEach((d,k)=>d.classList.toggle('on',k===idx));
-    if(idx===0) renderSectors();
   }
   document.getElementById('next').addEventListener('click',()=>go(idx+1));
   document.getElementById('prev').addEventListener('click',()=>go(idx-1));
   document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')go(idx+1);if(e.key==='ArrowLeft')go(idx-1);});
 
-  renderSectors(); renderChamp();
+  // clique num setor do card principal -> vai pro card daquele setor
+  document.querySelectorAll('.srow').forEach(r=>{
+    r.addEventListener('click',()=>go(parseInt(r.dataset.idx,10)));
+  });
+
   slides.forEach((s,k)=>s.classList.toggle('side',k!==0));
 })();
 </script>
