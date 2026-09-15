@@ -80,6 +80,47 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
 .prow .pevo.up{color:var(--up)} .prow .pevo.down{color:var(--down)} .prow .pevo.flat{color:var(--flat)}
 .prow .estreia{font-size:10px;font-weight:700;color:var(--gold2);background:rgba(201,162,39,.1);border:1px solid rgba(201,162,39,.3);border-radius:20px;padding:3px 9px}
 .emptyp{color:var(--ink3);font-size:13px;text-align:center;padding:40px 10px;font-weight:500}
+.prow{cursor:pointer}
+.prow:hover{background:var(--bg2)}
+/* status pill atual da pessoa */
+.spill{font-size:9.5px;font-weight:800;letter-spacing:.03em;padding:3px 8px;border-radius:20px;white-space:nowrap;text-transform:uppercase}
+.spill.insuf{background:rgba(209,87,87,.12);color:#c0413f;border:1px solid rgba(209,87,87,.3)}
+.spill.adeq{background:rgba(46,158,107,.12);color:#1f8a5a;border:1px solid rgba(46,158,107,.3)}
+.spill.estend{background:rgba(46,158,107,.16);color:#157a4c;border:1px solid rgba(46,158,107,.4)}
+.spill.exced{background:rgba(201,162,39,.14);color:#a17d15;border:1px solid rgba(201,162,39,.4)}
+.spill.zero{background:var(--bg2);color:var(--ink3);border:1px solid var(--line)}
+.prow{grid-template-columns:32px 1fr auto auto auto}
+
+/* legenda fixa rodapé do card */
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;padding:12px 30px;border-top:1px solid var(--line2);background:var(--bg)}
+.legend .lg{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--ink2);font-weight:500}
+.legend .lg .dot{width:9px;height:9px;border-radius:50%}
+.legend .lg b{color:var(--navy);font-weight:700}
+.legend .lg span{color:var(--ink3);font-size:10px}
+
+/* painel resumo da pessoa (semana a semana) */
+.pdetail{position:fixed;inset:0;background:rgba(16,36,57,.5);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
+.pdetail.open{display:flex}
+.pdbox{background:#fff;border-radius:20px;max-width:640px;width:100%;max-height:86vh;overflow:hidden;box-shadow:0 40px 90px rgba(16,36,57,.4);display:flex;flex-direction:column}
+.pdhead{padding:22px 26px 18px;border-bottom:1px solid var(--line2);display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.pdhead .pname2{font-size:20px;font-weight:800;color:var(--navy)}
+.pdhead .psub2{font-size:12px;color:var(--ink3);margin-top:4px;font-weight:500}
+.pdhead .pclose{background:var(--bg);border:1px solid var(--line);width:34px;height:34px;border-radius:10px;cursor:pointer;font-size:18px;color:var(--ink2);flex:0 0 auto}
+.pdhead .pclose:hover{color:var(--navy);border-color:var(--gold)}
+.pdmonths{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:16px 26px 6px}
+.pmon{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center}
+.pmon .mn{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);font-weight:700}
+.pmon .mp{font-size:22px;font-weight:900;color:var(--navy);font-variant-numeric:tabular-nums;margin-top:3px}
+.pmon .mh{font-size:11px;color:var(--ink3);font-weight:600;margin-top:2px}
+.pdweeks{padding:14px 26px 24px;overflow-y:auto}
+.pdweeks .wt{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);font-weight:700;margin:8px 0 12px}
+.wkrow{display:grid;grid-template-columns:110px 1fr 54px 90px;align-items:center;gap:12px;padding:9px 2px;border-bottom:1px solid var(--line2)}
+.wkrow:last-child{border-bottom:0}
+.wkrow .wl{font-size:12px;color:var(--ink2);font-weight:600;font-variant-numeric:tabular-nums}
+.wkrow .wbar{height:8px;background:var(--bg2);border-radius:5px;overflow:hidden}
+.wkrow .wbar i{display:block;height:100%;border-radius:5px}
+.wkrow .wp{text-align:right;font-weight:800;font-size:13px;color:var(--navy);font-variant-numeric:tabular-nums}
+.wkrow .ws{text-align:right}
 
 /* dots */
 .dots{display:flex;gap:7px;justify-content:center;margin-top:20px;flex-wrap:wrap;max-width:900px;margin-left:auto;margin-right:auto}
@@ -121,6 +162,21 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
 
 </div>
 
+<!-- modal resumo da pessoa -->
+<div class="pdetail" id="pdetail">
+  <div class="pdbox">
+    <div class="pdhead">
+      <div>
+        <div class="pname2" id="pd_name"></div>
+        <div class="psub2" id="pd_sub"></div>
+      </div>
+      <button class="pclose" id="pd_close">✕</button>
+    </div>
+    <div class="pdmonths" id="pd_months"></div>
+    <div class="pdweeks" id="pd_weeks"></div>
+  </div>
+</div>
+
 <script src="dados.js"></script>
 <script>
 (function(){
@@ -129,8 +185,28 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
   const clsv = v => v>1 ? 'up' : (v<-1 ? 'down' : 'flat');
   const fmtVar = v => (v>0?'+':'')+Math.round(v)+'%';
 
+  // status pela régua (% já é sobre a meta individual, cortes iguais p/ todos)
+  function statusOf(p){
+    if(p<=0) return {k:'zero', t:'sem reg.'};
+    if(p>=128.58) return {k:'exced', t:'Excedente'};
+    if(p>=107.15) return {k:'estend', t:'Estendido'};
+    if(p>=97.5) return {k:'adeq', t:'Adequado'};
+    return {k:'insuf', t:'Insuficiente'};
+  }
+  function statusColor(k){
+    return {insuf:'#d15757',adeq:'#2e9e6b',estend:'#157a4c',exced:'#c9a227',zero:'#c3cdd6'}[k]||'#c3cdd6';
+  }
+  const LEGEND = `<div class="legend">
+    <div class="lg"><span class="dot" style="background:#d15757"></span><b>Insuficiente</b><span>&lt;97,5%</span></div>
+    <div class="lg"><span class="dot" style="background:#2e9e6b"></span><b>Adequado</b><span>97,5–107%</span></div>
+    <div class="lg"><span class="dot" style="background:#157a4c"></span><b>Estendido</b><span>107–128%</span></div>
+    <div class="lg"><span class="dot" style="background:#c9a227"></span><b>Excedente</b><span>&gt;128,6%</span></div>
+    <div class="lg" style="margin-left:auto;color:var(--ink3)"><span>% sobre a meta individual · adv. 7h/dia · estag. 5h/dia</span></div>
+  </div>`;
+
   function varOf(j,s){ // retorna {varp, estreante}
-    if(j>0.5) return {varp:(s-j)/j*100, estreante:false};
+    // quem parte de <10% da meta em julho é "novo/estreante" (variação % explode e não representa evolução real)
+    if(j>=10) return {varp:(s-j)/j*100, estreante:false};
     return {varp:null, estreante:true};
   }
 
@@ -203,9 +279,11 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
     const rows = ppl.length ? ppl.map((p,i)=>{
       const k=p.estreante?'up':clsv(p.varp);
       const evo=p.estreante?'<span class="estreia">estreou</span>':`<div class="pevo ${k}">${fmtVar(p.varp)}</div>`;
-      return `<div class="prow r${i+1}"><div class="ppos">${i+1}</div>
+      const st=statusOf(p.s); // status pelo mês atual (setembro)
+      return `<div class="prow r${i+1}" data-nome="${encodeURIComponent(p.nome)}"><div class="ppos">${i+1}</div>
         <div class="pname">${p.nome}<small>${p.cargo||''}</small></div>
         <div class="ppct"><span class="a">${p.j.toFixed(0)}%</span> → <b>${p.s.toFixed(0)}%</b></div>
+        <span class="spill ${st.k}">${st.t}</span>
         ${evo}</div>`;
     }).join('') : '<div class="emptyp">Sem colaboradores com registro neste setor.</div>';
     return `<div class="card">
@@ -213,11 +291,12 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
         <div class="htext">
           <div class="eyebrow">Setor</div>
           <h2>${area}</h2>
-          <div class="desc">Quem mais evoluiu no setor · ${s.n} pessoa(s) · média ${s.j.toFixed(0)}% → ${s.s.toFixed(0)}% da meta</div>
+          <div class="desc">Ordenado por evolução (jul → set) · ${s.n} pessoa(s) · clique numa pessoa para ver semana a semana</div>
         </div>
         <div class="badge">${badge}</div>
       </div>
       <div class="card-b">${rows}</div>
+      ${LEGEND}
     </div>`;
   }
 
@@ -253,6 +332,46 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
   document.querySelectorAll('.srow').forEach(r=>{
     r.addEventListener('click',()=>go(parseInt(r.dataset.idx,10)));
   });
+
+  // clique numa PESSOA -> modal resumo semana a semana
+  const modal=document.getElementById('pdetail');
+  function openPerson(nome){
+    const v=D.colaboradores[nome]; if(!v) return;
+    const serie=D.semanas.series[nome]||[];
+    const labels=D.semanas.labels;
+    document.getElementById('pd_name').textContent=nome;
+    document.getElementById('pd_sub').textContent=`${v.area} · ${v.cargo||''} · meta ${v.meta}h/dia`;
+    // meses
+    document.getElementById('pd_months').innerHTML=['Julho','Agosto','Setembro'].map(mn=>{
+      const p=v.pct[mn], h=v.horas[mn], st=statusOf(p);
+      return `<div class="pmon"><div class="mn">${mn}${mn==='Setembro'?' *':''}</div>
+        <div class="mp" style="color:${statusColor(st.k)}">${p.toFixed(0)}%</div>
+        <div class="mh">${h.toFixed(0)}h · ${st.t}</div></div>`;
+    }).join('');
+    // semanas
+    const maxw=Math.max(130,...serie);
+    const wk=serie.map((p,i)=>{
+      const st=statusOf(p), col=statusColor(st.k);
+      const w=p<=0?0:Math.min(p,150)/150*100;
+      const stxt=p<=0?'<span class="spill zero">sem reg.</span>':`<span class="spill ${st.k}">${st.t}</span>`;
+      return `<div class="wkrow">
+        <div class="wl">${labels[i]}</div>
+        <div class="wbar"><i style="width:${w}%;background:${col}"></i></div>
+        <div class="wp">${p<=0?'–':p.toFixed(0)+'%'}</div>
+        <div class="ws">${stxt}</div></div>`;
+    }).join('');
+    document.getElementById('pd_weeks').innerHTML=`<div class="wt">Semana a semana · % da meta (* setembro parcial, até a data de corte)</div>${wk}`;
+    modal.classList.add('open');
+  }
+  function bindPeople(){
+    document.querySelectorAll('.prow[data-nome]').forEach(r=>{
+      r.onclick=()=>openPerson(decodeURIComponent(r.dataset.nome));
+    });
+  }
+  bindPeople();
+  document.getElementById('pd_close').addEventListener('click',()=>modal.classList.remove('open'));
+  modal.addEventListener('click',e=>{ if(e.target===modal) modal.classList.remove('open'); });
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape') modal.classList.remove('open'); });
 
   slides.forEach((s,k)=>s.classList.toggle('side',k!==0));
 })();
