@@ -27,7 +27,7 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
 .pagehead .rule{width:120px;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:16px auto 0}
 
 .carousel{position:relative;flex:1;display:flex;align-items:stretch;justify-content:center;margin-top:18px;min-height:0}
-.arw{flex:0 0 auto;width:48px;height:48px;border-radius:12px;background:var(--navy);border:0;color:#fff;font-size:22px;cursor:pointer;display:grid;place-items:center;transition:.18s;box-shadow:0 8px 20px rgba(22,50,79,.22);z-index:5}
+.arw{flex:0 0 auto;align-self:center;width:48px;height:48px;border-radius:12px;background:var(--navy);border:0;color:#fff;font-size:22px;cursor:pointer;display:grid;place-items:center;transition:.18s;box-shadow:0 8px 20px rgba(22,50,79,.22);z-index:5}
 .arw:hover{background:#0f2439;transform:translateY(-1px)}
 .viewport{flex:1;overflow:hidden;padding:8px clamp(10px,4vw,60px);display:flex;align-items:center;min-height:0}
 .track{display:flex;align-items:stretch;transition:transform .5s cubic-bezier(.5,.05,.2,1);width:100%;height:100%}
@@ -97,12 +97,14 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
 .spill.zero{background:var(--bg2);color:var(--ink3);border:1px solid var(--line)}
 .prow{grid-template-columns:32px 1fr auto auto auto}
 
-/* legenda fixa rodapé do card */
-.legend{display:flex;flex-wrap:wrap;gap:8px 16px;padding:12px 30px;border-top:1px solid var(--line2);background:var(--bg)}
+/* legenda fixa rodapé do card (centralizada) */
+.legend{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 24px;border-top:1px solid var(--line2);background:var(--bg)}
+.legend .lgrow{display:flex;flex-wrap:wrap;gap:10px 20px;justify-content:center}
 .legend .lg{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--ink2);font-weight:500}
 .legend .lg .dot{width:9px;height:9px;border-radius:50%}
 .legend .lg b{color:var(--navy);font-weight:700}
 .legend .lg span{color:var(--ink3);font-size:10px}
+.legend .lgnote{font-size:10px;color:var(--ink3);text-align:center}
 
 /* painel resumo da pessoa (semana a semana) */
 .pdetail{position:fixed;inset:0;background:rgba(16,36,57,.5);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
@@ -149,12 +151,6 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
 </head>
 <body>
 <div class="stage">
-
-  <div class="pagehead">
-    <div class="eyebrow">Destaque</div>
-    <h1>Desempenho no Timesheet · por Setor</h1>
-    <div class="rule"></div>
-  </div>
 
   <div class="carousel">
     <button class="arw" id="prev" aria-label="anterior">‹</button>
@@ -204,11 +200,13 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
     return {insuf:'#d15757',adeq:'#2e9e6b',estend:'#157a4c',exced:'#c9a227',zero:'#c3cdd6'}[k]||'#c3cdd6';
   }
   const LEGEND = `<div class="legend">
-    <div class="lg"><span class="dot" style="background:#d15757"></span><b>Insuficiente</b><span>&lt;97,5%</span></div>
-    <div class="lg"><span class="dot" style="background:#2e9e6b"></span><b>Adequado</b><span>97,5–107%</span></div>
-    <div class="lg"><span class="dot" style="background:#157a4c"></span><b>Estendido</b><span>107–128%</span></div>
-    <div class="lg"><span class="dot" style="background:#c9a227"></span><b>Excedente</b><span>&gt;128,6%</span></div>
-    <div class="lg" style="margin-left:auto;color:var(--ink3)"><span>média dos 3 meses (jul·ago·set) do % da meta individual · adv. 7h/dia · estag. 5h/dia</span></div>
+    <div class="lgrow">
+      <div class="lg"><span class="dot" style="background:#d15757"></span><b>Insuficiente</b><span>&lt;97,5%</span></div>
+      <div class="lg"><span class="dot" style="background:#2e9e6b"></span><b>Adequado</b><span>97,5–107%</span></div>
+      <div class="lg"><span class="dot" style="background:#157a4c"></span><b>Estendido</b><span>107–128%</span></div>
+      <div class="lg"><span class="dot" style="background:#c9a227"></span><b>Excedente</b><span>&gt;128,6%</span></div>
+    </div>
+    <div class="lgnote">média dos 3 meses (jul·ago·set) do % da meta individual · adv. 7h/dia · estag. 5h/dia</div>
   </div>`;
 
   function sectorData(){
