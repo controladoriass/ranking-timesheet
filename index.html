@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Ranking de Evolução · Timesheet · Silva & Silva</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0d1b2a; --navy2:#12263a; --navy3:#1b3a54; --panel:#152a3f;
+  --gold:#c9a227; --gold2:#e6c34a; --gold-soft:rgba(201,162,39,.14);
+  --ink:#eaf0f6; --ink2:#a8bccd; --ink3:#6f8aa0;
+  --line:rgba(201,162,39,.18); --line2:rgba(255,255,255,.06);
+  --up:#3fb37f; --up2:#6fe0ab; --down:#e06666; --down2:#ff9a9a; --flat:#8aa0b3;
+  --shadow:0 18px 50px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:radial-gradient(1200px 700px at 20% -10%, #163049 0%, var(--navy) 55%) fixed;color:var(--ink);font-family:'Montserrat',system-ui,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+body{padding:clamp(16px,3vw,44px)}
+.wrap{max-width:1180px;margin:0 auto}
+
+/* Header */
+.head{display:flex;flex-wrap:wrap;gap:18px 26px;align-items:flex-end;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:22px;margin-bottom:26px}
+.brand{display:flex;flex-direction:column;gap:6px}
+.kicker{font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:var(--gold);font-weight:700}
+h1{font-size:clamp(22px,3.2vw,34px);font-weight:800;letter-spacing:-.01em;line-height:1.05}
+h1 span{color:var(--gold2)}
+.sub{color:var(--ink2);font-size:13.5px;font-weight:400;max-width:640px;line-height:1.5}
+.periodo{text-align:right;font-size:12px;color:var(--ink3);line-height:1.7}
+.periodo b{color:var(--ink);font-weight:600}
+.periodo .du{display:inline-block;margin-top:6px;background:var(--gold-soft);border:1px solid var(--line);border-radius:20px;padding:4px 12px;color:var(--gold2);font-weight:600;font-size:11px}
+
+/* Controls */
+.controls{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:22px}
+.seg{display:inline-flex;background:var(--navy2);border:1px solid var(--line2);border-radius:12px;padding:4px;gap:2px}
+.seg button{background:transparent;border:0;color:var(--ink2);font-family:inherit;font-weight:600;font-size:12.5px;padding:8px 15px;border-radius:9px;cursor:pointer;transition:.16s;letter-spacing:.01em}
+.seg button:hover{color:var(--ink)}
+.seg button.on{background:linear-gradient(180deg,var(--gold),#a9861d);color:#1a1204;box-shadow:0 4px 14px rgba(201,162,39,.3)}
+.selwrap{display:flex;align-items:center;gap:9px;margin-left:auto}
+.selwrap label{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);font-weight:600}
+select{background:var(--navy2);color:var(--ink);border:1px solid var(--line2);border-radius:10px;padding:9px 13px;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;min-width:150px}
+select:focus{outline:none;border-color:var(--gold)}
+
+/* Section titles */
+.sec-t{display:flex;align-items:center;gap:12px;margin:34px 0 16px}
+.sec-t .n{width:26px;height:26px;border-radius:8px;background:var(--gold-soft);border:1px solid var(--line);color:var(--gold2);display:grid;place-items:center;font-weight:800;font-size:13px}
+.sec-t h2{font-size:16px;font-weight:700;letter-spacing:.02em}
+.sec-t .hint{color:var(--ink3);font-size:12px;font-weight:400;margin-left:2px}
+
+/* Ranking list */
+.rank{display:flex;flex-direction:column;gap:8px}
+.row{display:grid;grid-template-columns:44px 1fr auto;align-items:center;gap:14px;background:linear-gradient(180deg,var(--panel),var(--navy2));border:1px solid var(--line2);border-left:3px solid transparent;border-radius:13px;padding:13px 17px;transition:.15s}
+.row:hover{border-color:var(--line);transform:translateX(2px)}
+.row.up{border-left-color:var(--up)}
+.row.down{border-left-color:var(--down)}
+.row.flat{border-left-color:var(--flat)}
+.pos{font-weight:800;font-size:16px;color:var(--ink3);text-align:center}
+.row.top1 .pos,.row.top2 .pos,.row.top3 .pos{color:var(--gold2)}
+.who{min-width:0}
+.who .nm{font-weight:600;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.who .meta{display:flex;flex-wrap:wrap;gap:6px 10px;margin-top:4px;font-size:11.5px;color:var(--ink3)}
+.tag{background:rgba(255,255,255,.05);border:1px solid var(--line2);border-radius:6px;padding:1px 7px;color:var(--ink2);font-weight:500}
+.prog{display:flex;align-items:center;gap:12px;justify-self:end}
+.pcts{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink2);font-weight:500;white-space:nowrap}
+.pcts .a{color:var(--ink3)}
+.pcts .arrow{color:var(--ink3);font-size:11px}
+.pcts .b{color:var(--ink);font-weight:600}
+.delta{min-width:78px;text-align:right;font-weight:800;font-size:15px;font-variant-numeric:tabular-nums}
+.delta.up{color:var(--up2)}
+.delta.down{color:var(--down2)}
+.delta.flat{color:var(--flat)}
+.delta small{font-size:10px;font-weight:600;opacity:.75}
+
+/* mini bar under pct showing month value */
+.bar{height:6px;width:120px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden;position:relative}
+.bar i{display:block;height:100%;border-radius:4px}
+.bar .b100{position:absolute;top:-2px;bottom:-2px;width:1px;background:rgba(255,255,255,.35)}
+
+/* Sector cards */
+.sectors{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.scard{background:linear-gradient(180deg,var(--panel),var(--navy2));border:1px solid var(--line2);border-radius:14px;padding:16px 17px}
+.scard .st{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.scard .st .sn{font-weight:700;font-size:14px}
+.scard .st .sd{font-weight:800;font-size:15px;font-variant-numeric:tabular-nums}
+.scard .st .sd.up{color:var(--up2)}.scard .st .sd.down{color:var(--down2)}.scard .st .sd.flat{color:var(--flat)}
+.scard .sn small{color:var(--ink3);font-weight:500;font-size:11px}
+.spark{display:flex;align-items:flex-end;gap:6px;height:56px;margin-top:14px}
+.spark .col{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;justify-content:flex-end;height:100%}
+.spark .col .bb{width:100%;max-width:34px;border-radius:5px 5px 0 0;background:linear-gradient(180deg,var(--gold2),var(--gold));min-height:3px}
+.spark .col .bb.dim{background:linear-gradient(180deg,#365068,#28405a)}
+.spark .col .lb{font-size:9.5px;color:var(--ink3);font-weight:600}
+.spark .col .vv{font-size:10px;color:var(--ink2);font-weight:700}
+
+/* Weekly */
+.weekly{background:linear-gradient(180deg,var(--panel),var(--navy2));border:1px solid var(--line2);border-radius:16px;padding:20px 20px 8px;overflow-x:auto}
+table.wk{border-collapse:collapse;width:100%;min-width:820px;font-size:12px}
+table.wk th,table.wk td{padding:8px 6px;text-align:center;border-bottom:1px solid var(--line2)}
+table.wk th{color:var(--ink3);font-weight:600;font-size:10.5px;letter-spacing:.03em;white-space:nowrap;position:sticky;top:0}
+table.wk th.nmh,table.wk td.nmc{text-align:left;position:sticky;left:0;background:var(--navy2);min-width:190px;z-index:1}
+table.wk td.nmc{font-weight:600;color:var(--ink)}
+table.wk td.nmc small{display:block;color:var(--ink3);font-weight:500;font-size:10px}
+.cell{display:inline-block;min-width:40px;padding:3px 6px;border-radius:6px;font-weight:700;font-variant-numeric:tabular-nums}
+.trendcell{font-weight:800;font-variant-numeric:tabular-nums}
+.trendcell.up{color:var(--up2)}.trendcell.down{color:var(--down2)}.trendcell.flat{color:var(--flat)}
+
+/* Legend / regua */
+.regua{background:linear-gradient(180deg,var(--panel),var(--navy2));border:1px solid var(--line2);border-radius:14px;padding:16px 18px;margin-top:14px}
+.regua h3{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);font-weight:600;margin-bottom:12px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.04);border:1px solid var(--line2);border-radius:9px;padding:7px 12px;font-size:12px}
+.chip .dot{width:9px;height:9px;border-radius:50%}
+.chip b{font-weight:700}.chip span{color:var(--ink3);font-size:11px}
+
+.foot{margin-top:34px;padding-top:18px;border-top:1px solid var(--line2);color:var(--ink3);font-size:11.5px;line-height:1.7;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px}
+.foot .lock{color:var(--gold2);font-weight:600}
+
+.empty{color:var(--ink3);font-size:13px;padding:24px;text-align:center;background:var(--navy2);border:1px dashed var(--line2);border-radius:12px}
+
+@media(max-width:640px){
+  .row{grid-template-columns:34px 1fr;gap:10px}
+  .prog{grid-column:1/-1;justify-self:stretch;justify-content:space-between;margin-top:4px;padding-top:8px;border-top:1px solid var(--line2)}
+  .bar{display:none}
+  .periodo{text-align:left}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="head">
+    <div class="brand">
+      <div class="kicker">Silva &amp; Silva Advogados · Controladoria</div>
+      <h1>Ranking de <span>Evolução</span> · Timesheet</h1>
+      <p class="sub">Quem mais evoluiu na produtividade, do topo ao fim, medido pela variação do <b>% da meta individual</b> entre os meses. A meta de cada um vem do cadastro (advogado 7h/dia, estagiário 5h/dia). Ranking por colaborador e por setor, com detalhamento semanal.</p>
+    </div>
+    <div class="periodo" id="periodo"></div>
+  </header>
+
+  <div class="controls">
+    <div class="seg" id="segEvo">
+      <button data-k="evo_jul_ago" class="on">Julho → Agosto</button>
+      <button data-k="evo_ago_set">Agosto → Setembro</button>
+      <button data-k="evo_jul_set">Julho → Setembro</button>
+    </div>
+    <div class="selwrap">
+      <label for="selSetor">Setor</label>
+      <select id="selSetor"><option value="__all">Todos os setores</option></select>
+    </div>
+  </div>
+
+  <div class="sec-t"><div class="n">1</div><h2>Evolução por colaborador</h2><span class="hint" id="hintColab"></span></div>
+  <div class="rank" id="rankColab"></div>
+
+  <div class="sec-t"><div class="n">2</div><h2>Evolução por setor</h2><span class="hint">média do % da meta dos colaboradores de cada área</span></div>
+  <div class="sectors" id="sectors"></div>
+
+  <div class="sec-t"><div class="n">3</div><h2>Detalhamento semanal</h2><span class="hint" id="hintWk">% da meta por semana · a última coluna mostra a tendência (1ª → última semana com registro)</span></div>
+  <div class="weekly"><div id="weeklyBox"></div></div>
+
+  <div class="regua">
+    <h3>Régua de status (% sobre a meta individual)</h3>
+    <div class="chips">
+      <div class="chip"><span class="dot" style="background:#e06666"></span><b>Insuficiente</b><span>0–97,4%</span></div>
+      <div class="chip"><span class="dot" style="background:#3fb37f"></span><b>Adequado</b><span>97,5–107,14%</span></div>
+      <div class="chip"><span class="dot" style="background:#6fe0ab"></span><b>Estendido</b><span>107,15–128,58%</span></div>
+      <div class="chip"><span class="dot" style="background:#c9a227"></span><b>Excedente</b><span>acima de 128,58%</span></div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <div><span class="lock">🔒 Documento interno.</span> Contém nomes e produtividade de colaboradores. Não indexado, não publicar link externamente.</div>
+    <div>Fonte: planilhas <b>Timesheet_Painel</b> (jul · ago · set). Setembro em curso, dados até <b id="fSet"></b>.</div>
+  </div>
+
+</div>
+
+<script src="dados.js"></script>
+<script>
+(function(){
+  const D = window.TIMESHEET_DATA;
+  const MESES = D.meses;
+  const EVO_MESES = { evo_jul_ago:['Julho','Agosto'], evo_ago_set:['Agosto','Setembro'], evo_jul_set:['Julho','Setembro'] };
+  let curEvo = 'evo_jul_ago';
+  let curSetor = '__all';
+
+  // period header
+  document.getElementById('periodo').innerHTML =
+    `Período analisado<br><b>${D.periodo.inicio} → ${D.periodo.fim}</b>`+
+    `<span class="du">Dias úteis · Jul ${D.dias_uteis.Julho} · Ago ${D.dias_uteis.Agosto} · Set ${D.dias_uteis.Setembro} (parcial)</span>`;
+  document.getElementById('fSet').textContent = D.periodo.fim;
+
+  // sector dropdown
+  const setores = Object.keys(D.setores).sort((a,b)=>a.localeCompare(b,'pt'));
+  const sel = document.getElementById('selSetor');
+  setores.forEach(s=>{ const o=document.createElement('option'); o.value=s; o.textContent=s; sel.appendChild(o); });
+
+  const cls = v => v>0.5 ? 'up' : (v<-0.5 ? 'down' : 'flat');
+  const sign = v => (v>0?'+':'')+v.toFixed(1);
+  const statusColor = p => p>=128.58?'#c9a227': p>=107.15?'#6fe0ab': p>=97.5?'#3fb37f':'#e06666';
+  const fmtPct = p => (p||0).toFixed(1)+'%';
+
+  function colabList(){
+    let arr = Object.entries(D.colaboradores).map(([nome,v])=>({nome,...v}));
+    if(curSetor!=='__all') arr = arr.filter(c=>c.area===curSetor);
+    const [m1,m2]=EVO_MESES[curEvo];
+    arr.forEach(c=>{ c._d=c[curEvo]; c._p1=c.pct[m1]; c._p2=c.pct[m2]; });
+    arr.sort((a,b)=> b._d-a._d || b._p2-a._p2);
+    return arr;
+  }
+
+  function renderColab(){
+    const [m1,m2]=EVO_MESES[curEvo];
+    const arr = colabList();
+    document.getElementById('hintColab').textContent =
+      `${m1} → ${m2} · ${arr.length} colaborador(es)`+(curSetor!=='__all'?` · ${curSetor}`:'');
+    const box = document.getElementById('rankColab');
+    if(!arr.length){ box.innerHTML='<div class="empty">Nenhum colaborador neste setor.</div>'; return; }
+    box.innerHTML = arr.map((c,i)=>{
+      const k=cls(c._d), pos=i+1;
+      const topc = pos<=3 ? ' top'+pos : '';
+      const bw = Math.max(2, Math.min(c._p2,150)/150*100);
+      return `<div class="row ${k}${topc}">
+        <div class="pos">${pos}</div>
+        <div class="who">
+          <div class="nm">${c.nome}</div>
+          <div class="meta">
+            <span class="tag">${c.area}</span>
+            <span>${c.cargo||''}</span>
+            <span>meta ${c.meta}h/dia</span>
+          </div>
+        </div>
+        <div class="prog">
+          <div class="pcts">
+            <span class="a">${fmtPct(c._p1)}</span>
+            <span class="arrow">▸</span>
+            <span class="b">${fmtPct(c._p2)}</span>
+          </div>
+          <div class="bar"><i style="width:${bw}%;background:${statusColor(c._p2)}"></i><span class="b100" style="left:${100/150*100}%"></span></div>
+          <div class="delta ${k}">${sign(c._d)}<small> pts</small></div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderSectors(){
+    const [m1,m2]=EVO_MESES[curEvo];
+    let entries = Object.entries(D.setores).map(([nome,v])=>({nome,...v}));
+    // esconder setores 100% sem lançamento (média 0 em todos os meses)
+    entries = entries.filter(s=> (s.Julho+s.Agosto+s.Setembro)>0 );
+    entries.forEach(s=> s._d = s[m2]-s[m1]);
+    entries.sort((a,b)=> b._d-a._d);
+    const maxv = Math.max(100, ...entries.flatMap(s=>[s.Julho,s.Agosto,s.Setembro]));
+    document.getElementById('sectors').innerHTML = entries.map(s=>{
+      const k=cls(s._d);
+      const cols = MESES.map(mn=>{
+        const val=s[mn]; const h=Math.max(3, val/maxv*100);
+        const active = (mn===m1||mn===m2);
+        return `<div class="col"><div class="vv">${val.toFixed(0)}%</div>
+          <div class="bb ${active?'':'dim'}" style="height:${h}%"></div>
+          <div class="lb">${mn.slice(0,3)}</div></div>`;
+      }).join('');
+      return `<div class="scard">
+        <div class="st"><div class="sn">${s.nome} <small>· ${s.n} pessoa(s)</small></div>
+        <div class="sd ${k}">${sign(s._d)}</div></div>
+        <div class="spark">${cols}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderWeekly(){
+    const labels = D.semanas.labels;
+    const series = D.semanas.series;
+    let names = Object.keys(D.colaboradores);
+    if(curSetor!=='__all') names = names.filter(n=>D.colaboradores[n].area===curSetor);
+    // tendência: última semana com >0 menos primeira semana com >0
+    const rows = names.map(n=>{
+      const s = series[n]||[];
+      let fi=-1,li=-1;
+      s.forEach((v,i)=>{ if(v>0){ if(fi<0)fi=i; li=i; } });
+      const trend = (fi>=0 && li>fi) ? (s[li]-s[fi]) : 0;
+      return {n, s, trend, hasData: fi>=0};
+    }).filter(r=>r.hasData);
+    rows.sort((a,b)=> b.trend-a.trend);
+    if(!rows.length){ document.getElementById('weeklyBox').innerHTML='<div class="empty">Sem lançamentos semanais neste setor.</div>'; return; }
+    const head = `<tr><th class="nmh">Colaborador</th>${labels.map(l=>`<th>${l}</th>`).join('')}<th>Tend.</th></tr>`;
+    const body = rows.map(r=>{
+      const cells = r.s.map(v=>{
+        if(v<=0) return `<td><span style="color:var(--ink3)">–</span></td>`;
+        const bg = statusColor(v);
+        return `<td><span class="cell" style="background:${bg}22;color:${bg}">${v.toFixed(0)}</span></td>`;
+      }).join('');
+      const tk=cls(r.trend);
+      return `<tr><td class="nmc">${r.n}<small>${D.colaboradores[r.n].area}</small></td>${cells}<td class="trendcell ${tk}">${sign(r.trend)}</td></tr>`;
+    }).join('');
+    document.getElementById('weeklyBox').innerHTML = `<table class="wk"><thead>${head}</thead><tbody>${body}</tbody></table>`;
+  }
+
+  function renderAll(){ renderColab(); renderSectors(); renderWeekly(); }
+
+  document.querySelectorAll('#segEvo button').forEach(b=>{
+    b.addEventListener('click',()=>{
+      document.querySelectorAll('#segEvo button').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on'); curEvo=b.dataset.k; renderAll();
+    });
+  });
+  sel.addEventListener('change',()=>{ curSetor=sel.value; renderAll(); });
+
+  renderAll();
+})();
+</script>
+</body>
+</html>
