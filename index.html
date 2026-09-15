@@ -18,24 +18,24 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
-body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:var(--ink);font-family:'Montserrat',system-ui,Arial,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column}
-.stage{flex:1;display:flex;flex-direction:column;width:100%;max-width:1280px;margin:0 auto;padding:clamp(20px,3vw,40px) clamp(14px,2.5vw,30px)}
+body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:var(--ink);font-family:'Montserrat',system-ui,Arial,sans-serif;-webkit-font-smoothing:antialiased;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.stage{flex:1;display:flex;flex-direction:column;width:100%;max-width:1280px;margin:0 auto;padding:clamp(16px,2.5vw,34px) clamp(14px,2.5vw,30px);min-height:0}
 
 .pagehead{text-align:center;margin-bottom:6px}
 .pagehead .eyebrow{font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:10px}
 .pagehead h1{font-size:clamp(24px,3.6vw,38px);font-weight:800;letter-spacing:-.015em;color:var(--navy)}
 .pagehead .rule{width:120px;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:16px auto 0}
 
-.carousel{position:relative;flex:1;display:flex;align-items:center;justify-content:center;margin-top:22px}
+.carousel{position:relative;flex:1;display:flex;align-items:stretch;justify-content:center;margin-top:18px;min-height:0}
 .arw{flex:0 0 auto;width:48px;height:48px;border-radius:12px;background:var(--navy);border:0;color:#fff;font-size:22px;cursor:pointer;display:grid;place-items:center;transition:.18s;box-shadow:0 8px 20px rgba(22,50,79,.22);z-index:5}
 .arw:hover{background:#0f2439;transform:translateY(-1px)}
-.viewport{flex:1;overflow:hidden;padding:22px clamp(10px,4vw,60px)}
-.track{display:flex;align-items:stretch;transition:transform .5s cubic-bezier(.5,.05,.2,1)}
-.slide{flex:0 0 100%;padding:0 14px;display:flex;transition:.5s;opacity:1}
+.viewport{flex:1;overflow:hidden;padding:8px clamp(10px,4vw,60px);display:flex;align-items:center;min-height:0}
+.track{display:flex;align-items:stretch;transition:transform .5s cubic-bezier(.5,.05,.2,1);width:100%;height:100%}
+.slide{flex:0 0 100%;padding:0 14px;display:flex;transition:.5s;opacity:1;min-height:0}
 .slide.side{opacity:.4;filter:saturate(.7)}
 .slide .card{width:100%}
 
-.card{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden;min-height:540px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden;max-height:100%}
 .slide.side .card{box-shadow:var(--shadow-side);transform:scale(.94)}
 .card-h{padding:24px 30px 16px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
 .card-h .htext .eyebrow{font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:8px}
@@ -263,7 +263,7 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
       <div class="card-h"><div class="htext">
         <div class="eyebrow">Card principal · por setor</div>
         <h2>Qual setor mais evoluiu</h2>
-        <div class="desc">Crescimento do % da meta de julho até a data atual. Clique num setor para abrir o card dele.</div>
+        <div class="desc">Crescimento do % da meta de julho (01/07) até a data de corte (13/09). Clique num setor para abrir o card dele.</div>
       </div></div>
       <div class="card-b"><div class="slist">${rows}</div></div>
     </div>`;
