@@ -395,8 +395,8 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
     }).join('');
     // datas no eixo x (início de cada semana; cabe bem no modal largo)
     const xlabels=semanas.map((s,i)=>{
-      const parts=s.lab.split('–');
-      return `<text x="${xAt(i).toFixed(1)}" y="${H-10}" text-anchor="middle" font-size="10.5" fill="#7a90a2" font-weight="600">${parts[0]}</text>`;
+      const ini=s.lab.split(' a ')[0]; // só o início da semana no eixo (ex: 07/09)
+      return `<text x="${xAt(i).toFixed(1)}" y="${H-10}" text-anchor="middle" font-size="10.5" fill="#7a90a2" font-weight="600">${ini}</text>`;
     }).join('');
     const svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet" style="display:block">
       ${grid}
