@@ -85,8 +85,10 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
 .prow .pevo.up{color:var(--up)} .prow .pevo.down{color:var(--down)} .prow .pevo.flat{color:var(--flat)}
 .prow .estreia{font-size:10px;font-weight:700;color:var(--gold2);background:rgba(201,162,39,.1);border:1px solid rgba(201,162,39,.3);border-radius:20px;padding:3px 9px}
 .emptyp{color:var(--ink3);font-size:13px;text-align:center;padding:40px 10px;font-weight:500}
-.prow{cursor:pointer;grid-template-columns:32px 1fr auto auto 64px !important}
+.prow{cursor:pointer;grid-template-columns:32px 1fr 20px !important}
 .prow:hover{background:var(--bg2)}
+.prow:hover .pgo{color:var(--gold)}
+.prow .pgo{color:var(--ink3);font-size:18px;text-align:center;transition:.14s}
 .prow .pevo small{display:block;font-size:9px;font-weight:600;color:var(--ink3);margin-top:1px;letter-spacing:.03em;text-align:right}
 /* status pill atual da pessoa */
 .spill{font-size:9.5px;font-weight:800;letter-spacing:.03em;padding:3px 8px;border-radius:20px;white-space:nowrap;text-transform:uppercase}
@@ -286,27 +288,20 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
   function setorHTML(area){
     const s=SECTORS.find(x=>x.nome===area);
     const ppl=peopleOf(area);
-    const bst=statusOf(s.pct);
-    const badge=`<div class="bv" style="color:${statusColor(bst.k)}">${fmtPct(s.pct)}</div><div class="bl">${Math.round(s.feito)}h de ${Math.round(s.devido)}h</div>`;
     const rows = ppl.length ? ppl.map((p,i)=>{
-      const st=statusOf(p.pct);
       return `<div class="prow r${i+1}" data-nome="${encodeURIComponent(p.nome)}"><div class="ppos">${i+1}</div>
         <div class="pname">${p.nome}<small>${p.cargo||''}</small></div>
-        ${horasInline(p.feito,p.devido)}
-        <span class="spill ${st.k}">${st.t}</span>
-        <div class="pevo" style="color:${statusColor(st.k)}">${fmtPct(p.pct)}</div></div>`;
+        <div class="pgo">›</div></div>`;
     }).join('') : '<div class="emptyp">Sem colaboradores com registro neste setor.</div>';
     return `<div class="card">
       <div class="card-h">
         <div class="htext">
           <div class="eyebrow">Setor</div>
           <h2>${area}</h2>
-          <div class="desc">Horas registradas ÷ meta no período · ${s.n} pessoa(s) · clique numa pessoa para ver semana a semana</div>
+          <div class="desc">${s.n} pessoa(s) · clique numa pessoa para ver o gráfico semana a semana</div>
         </div>
-        <div class="badge">${badge}</div>
       </div>
       <div class="card-b">${rows}</div>
-      ${LEGEND}
     </div>`;
   }
 
