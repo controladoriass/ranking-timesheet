@@ -120,15 +120,37 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
 .pmon .mn{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);font-weight:700}
 .pmon .mp{font-size:22px;font-weight:900;color:var(--navy);font-variant-numeric:tabular-nums;margin-top:3px}
 .pmon .mh{font-size:11px;color:var(--ink3);font-weight:600;margin-top:2px}
-.pdweeks{padding:14px 26px 24px;overflow-y:auto}
-.pdweeks .wt{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);font-weight:700;margin:8px 0 12px}
-.wkrow{display:grid;grid-template-columns:110px 1fr 54px 90px;align-items:center;gap:12px;padding:9px 2px;border-bottom:1px solid var(--line2)}
-.wkrow:last-child{border-bottom:0}
-.wkrow .wl{font-size:12px;color:var(--ink2);font-weight:600;font-variant-numeric:tabular-nums}
-.wkrow .wbar{height:8px;background:var(--bg2);border-radius:5px;overflow:hidden}
-.wkrow .wbar i{display:block;height:100%;border-radius:5px}
-.wkrow .wp{text-align:right;font-weight:800;font-size:13px;color:var(--navy);font-variant-numeric:tabular-nums}
-.wkrow .ws{text-align:right}
+.pdweeks{padding:16px 26px 24px;overflow-y:auto}
+.pdweeks .wt{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);font-weight:700;margin:4px 0 6px}
+.pdweeks .wtsub{font-size:11px;color:var(--ink3);font-weight:500;margin-bottom:16px}
+/* gráfico de colunas semanais */
+.chart{position:relative;display:flex;align-items:flex-end;gap:6px;height:190px;padding:22px 0 0;border-bottom:2px solid var(--line);margin-bottom:6px}
+.chart .goal{position:absolute;left:0;right:0;border-top:2px dashed #9fb3c4;z-index:1}
+.chart .goal .gl{position:absolute;right:0;top:-8px;font-size:9px;color:#7a90a2;background:#fff;padding:0 4px;font-weight:700}
+.col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:0;position:relative;min-width:0}
+.col .barwrap{width:100%;display:flex;align-items:flex-end;justify-content:center;flex:1}
+.col .bar{width:76%;max-width:26px;border-radius:5px 5px 0 0;transition:.3s;min-height:2px}
+.col .bar.hit{background:linear-gradient(180deg,#3fb37f,#2e9e6b)}
+.col .bar.miss{background:linear-gradient(180deg,#e58585,#d15757)}
+.col .bar.zero{background:#d7dee5}
+.col .cpct{font-size:9.5px;font-weight:800;margin-bottom:3px;font-variant-numeric:tabular-nums}
+.col .cpct.hit{color:#2e9e6b} .col .cpct.miss{color:#d15757} .col .cpct.zero{color:var(--ink3)}
+.chart-x{display:flex;gap:6px;margin-top:6px}
+.chart-x .xl{flex:1;text-align:center;font-size:8.5px;color:var(--ink3);font-weight:600;line-height:1.3;min-width:0}
+/* detalhe horas por semana (lista abaixo do gráfico) */
+.wkhours{margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:6px 18px}
+.wkh{display:flex;justify-content:space-between;gap:10px;font-size:11.5px;padding:5px 0;border-bottom:1px solid var(--line2)}
+.wkh .wkl{color:var(--ink2);font-weight:600}
+.wkh .wkv{font-weight:700;font-variant-numeric:tabular-nums}
+.wkh .wkv.hit{color:#2e9e6b} .wkh .wkv.miss{color:#d15757} .wkh .wkv.zero{color:var(--ink3)}
+.wklegend{display:flex;gap:16px;justify-content:center;margin-top:14px;font-size:11px;color:var(--ink2)}
+.wklegend span{display:flex;align-items:center;gap:6px}
+.wklegend i{width:11px;height:11px;border-radius:3px;display:inline-block}
+@media(max-width:560px){
+  .col .cpct{font-size:8px}
+  .chart-x .xl{font-size:7px}
+  .wkhours{grid-template-columns:1fr}
+}
 
 /* dots */
 .dots{display:flex;gap:7px;justify-content:center;margin-top:20px;flex-wrap:wrap;max-width:900px;margin-left:auto;margin-right:auto}
@@ -330,31 +352,64 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
   const modal=document.getElementById('pdetail');
   function openPerson(nome){
     const v=D.colaboradores[nome]; if(!v) return;
-    const serie=D.semanas.series[nome]||[];
     const labels=D.semanas.labels;
+    const horasSem=(D.semanas.horas&&D.semanas.horas[nome])||[];
+    const duSem=D.semanas.dias_uteis||[];
+    const meta=v.meta;
     document.getElementById('pd_name').textContent=nome;
-    document.getElementById('pd_sub').textContent=`${v.area} · ${v.cargo||''} · meta ${v.meta}h/dia`;
-    // meses
+    document.getElementById('pd_sub').textContent=`${v.area} · ${v.cargo||''} · meta ${meta}h/dia`;
+    // meses (mantém o resumo dos 3 meses no topo)
     document.getElementById('pd_months').innerHTML=['Julho','Agosto','Setembro'].map(mn=>{
       const p=v.pct[mn], h=v.horas[mn], st=statusOf(p);
       return `<div class="pmon"><div class="mn">${mn}${mn==='Setembro'?' *':''}</div>
         <div class="mp" style="color:${statusColor(st.k)}">${p.toFixed(0)}%</div>
         <div class="mh">${h.toFixed(0)}h · ${st.t}</div></div>`;
     }).join('');
-    // semanas
-    const maxw=Math.max(130,...serie);
-    const wk=serie.map((p,i)=>{
-      const st=statusOf(p), col=statusColor(st.k);
-      const w=p<=0?0:Math.min(p,150)/150*100;
-      const stxt=p<=0?'<span class="spill zero">sem reg.</span>':`<span class="spill ${st.k}">${st.t}</span>`;
-      return `<div class="wkrow">
-        <div class="wl">${labels[i]}</div>
-        <div class="wbar"><i style="width:${w}%;background:${col}"></i></div>
-        <div class="wp">${p<=0?'–':p.toFixed(0)+'%'}</div>
-        <div class="ws">${stxt}</div></div>`;
+
+    // === GRÁFICO DE COLUNAS SEMANAIS (bateu = verde / não bateu = vermelho) ===
+    // meta esperada da semana = meta/dia × dias úteis daquela semana
+    const semanas=labels.map((lab,i)=>{
+      const feito=horasSem[i]||0;
+      const esperado=meta*(duSem[i]||0);
+      const pct=esperado>0? feito/esperado*100 : 0;
+      const bateu=pct>=97.5;
+      const cls=feito<=0?'zero':(bateu?'hit':'miss');
+      return {lab, feito, esperado, pct, cls};
+    });
+    const maxPct=Math.max(120,...semanas.map(s=>s.pct)); // teto do gráfico
+    const goalTop=(1-100/maxPct)*100; // posição da linha de meta (100%)
+    const cols=semanas.map(s=>{
+      const h=s.pct<=0?0:Math.min(s.pct,maxPct)/maxPct*100;
+      const pctTxt=s.feito<=0?'–':Math.round(s.pct)+'%';
+      return `<div class="col">
+        <div class="cpct ${s.cls}">${pctTxt}</div>
+        <div class="barwrap"><div class="bar ${s.cls}" style="height:${h}%"></div></div>
+      </div>`;
     }).join('');
-    document.getElementById('pd_weeks').innerHTML=`<div class="wt">Semana a semana · % da meta (* setembro parcial, até a data de corte)</div>${wk}`;
+    const xlabels=semanas.map(s=>`<div class="xl">${s.lab}</div>`).join('');
+    // lista de horas feito/esperado por semana
+    const lista=semanas.map(s=>{
+      const v2=s.feito<=0?`<span class="wkv zero">0h de ${s.esperado.toFixed(0)}h</span>`
+        :`<span class="wkv ${s.cls}">${s.feito.toFixed(0)}h de ${s.esperado.toFixed(0)}h</span>`;
+      return `<div class="wkh"><span class="wkl">${s.lab}</span>${v2}</div>`;
+    }).join('');
+
+    document.getElementById('pd_weeks').innerHTML=`
+      <div class="wt">Evolução semana a semana</div>
+      <div class="wtsub">Bateu a meta de horas da semana? Verde = bateu (≥97,5%) · vermelho = ficou abaixo. Meta da semana = ${meta}h/dia × dias úteis. (* setembro parcial, até 13/09)</div>
+      <div class="chart">
+        <div class="goal" style="top:${goalTop}%"><span class="gl">meta 100%</span></div>
+        ${cols}
+      </div>
+      <div class="chart-x">${xlabels}</div>
+      <div class="wkhours">${lista}</div>
+      <div class="wklegend">
+        <span><i style="background:#2e9e6b"></i> bateu a meta</span>
+        <span><i style="background:#d15757"></i> abaixo da meta</span>
+        <span><i style="background:#d7dee5"></i> sem registro</span>
+      </div>`;
     modal.classList.add('open');
+    document.querySelector('.pdweeks').scrollTop=0;
   }
   function bindPeople(){
     document.querySelectorAll('.prow[data-nome]').forEach(r=>{
