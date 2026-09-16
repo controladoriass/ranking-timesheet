@@ -231,22 +231,6 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
     <div class="lgnote">% = horas registradas ÷ horas da meta no período · meta: adv./financeiro 7h/dia · estagiário 5h/dia</div>
   </div>`;
 
-  function sectorData(){
-    // agregar horas feitas e devidas por setor (somando as pessoas)
-    const agg={};
-    for(const [nome,v] of Object.entries(D.colaboradores)){
-      const a=v.area||'Sem área';
-      if(!agg[a]) agg[a]={nome:a,n:0,feito:0,devido:0};
-      agg[a].n++;
-      agg[a].feito+=feitoDe(v.horas);
-      agg[a].devido+=devidoDe(v.meta);
-    }
-    let arr=Object.values(agg).filter(s=>s.feito>0).map(s=>({
-      ...s, pct: s.devido>0? s.feito/s.devido*100 : 0
-    }));
-    arr.sort((a,b)=> b.pct-a.pct);
-    return arr;
-  }
   // consistência = em quantos períodos a pessoa bateu a meta (≥97,5%)
   function consistenciaDe(nome){
     const v=D.colaboradores[nome]; const hs=(D.semanas.horas&&D.semanas.horas[nome])||[];
@@ -263,6 +247,26 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
     });
     // ordena por CONSISTÊNCIA (nº de períodos que bateu a meta), desempate pelo % acumulado
     arr.sort((a,b)=> b.bateu-a.bateu || b.pct-a.pct);
+    return arr;
+  }
+  function sectorData(){
+    // por setor: média de períodos batidos por pessoa (consistência do setor) + horas p/ referência
+    const agg={};
+    for(const [nome,v] of Object.entries(D.colaboradores)){
+      const a=v.area||'Sem área';
+      if(!agg[a]) agg[a]={nome:a,n:0,feito:0,devido:0,batidasSoma:0};
+      agg[a].n++;
+      agg[a].feito+=feitoDe(v.horas);
+      agg[a].devido+=devidoDe(v.meta);
+      agg[a].batidasSoma+=consistenciaDe(nome).bateu;
+    }
+    let arr=Object.values(agg).filter(s=>s.feito>0).map(s=>({
+      ...s,
+      pct: s.devido>0? s.feito/s.devido*100 : 0,
+      consistMedia: s.n>0? s.batidasSoma/s.n : 0  // média de períodos batidos por pessoa
+    }));
+    // ordena por consistência média (setores que mais se mantiveram batendo a meta), desempate pelo % de horas
+    arr.sort((a,b)=> b.consistMedia-a.consistMedia || b.pct-a.pct);
     return arr;
   }
 
@@ -288,8 +292,8 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
     return `<div class="card">
       <div class="card-h"><div class="htext">
         <div class="eyebrow">Card principal · por setor</div>
-        <h2>Setores</h2>
-        <div class="desc">Horas registradas no período (01/07 a 13/09).</div>
+        <h2>Setores que mais se mantiveram batendo a meta</h2>
+        <div class="desc">Ranking pela média de períodos em que cada pessoa do setor bateu a meta de horas (dos 10 períodos, de julho até 13/09). Meta por função: advogado/financeiro 7h/dia · estagiário 5h/dia.</div>
       </div></div>
       <div class="card-b"><div class="slist">${rows}</div></div>
     </div>`;
