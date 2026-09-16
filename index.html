@@ -54,7 +54,7 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
 
 /* sector rows (card principal) */
 .slist{display:flex;flex-direction:column}
-.srow{display:grid;grid-template-columns:34px 1fr auto 96px 84px 20px;align-items:center;gap:14px;padding:14px 12px;border-bottom:1px solid var(--line2);cursor:pointer;transition:.14s;border-radius:10px}
+.srow{display:grid;grid-template-columns:34px 1fr 20px;align-items:center;gap:14px;padding:16px 12px;border-bottom:1px solid var(--line2);cursor:pointer;transition:.14s;border-radius:10px}
 .srow:last-child{border-bottom:0}
 .srow:hover{background:var(--bg2)}
 .srow:hover .go{color:var(--gold)}
@@ -263,25 +263,20 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
   }
   function principalHTML(){
     const rows=SECTORS.map((s,i)=>{
-      const st=statusOf(s.pct);
-      const w=Math.max(5,s.pct/maxPctS*100);
       return `<div class="srow r${i+1}" data-idx="${i+1}">
         <div class="pos">${i+1}</div>
         <div class="sinfo"><div class="sname">${s.nome}</div>
-          <div class="ssub">${s.n} pessoa(s) · ${Math.round(s.feito)}h de ${Math.round(s.devido)}h no período</div></div>
-        <div class="track2"><i style="width:${w}%;background:linear-gradient(90deg,${statusColor(st.k)}bb,${statusColor(st.k)})"></i></div>
-        <div class="evo" style="color:${statusColor(st.k)}">${fmtPct(s.pct)}<small>da meta</small></div>
+          <div class="ssub">${s.n} pessoa(s)</div></div>
         <div class="go">›</div>
       </div>`;
     }).join('');
     return `<div class="card">
       <div class="card-h"><div class="htext">
         <div class="eyebrow">Card principal · por setor</div>
-        <h2>Desempenho por setor</h2>
-        <div class="desc">Horas registradas ÷ horas da meta no período (01/07 a 13/09). Clique num setor para abrir o card dele.</div>
+        <h2>Setores</h2>
+        <div class="desc">Horas registradas no período (01/07 a 13/09). Clique num setor para abrir o card dele.</div>
       </div></div>
       <div class="card-b"><div class="slist">${rows}</div></div>
-      ${LEGEND}
     </div>`;
   }
 
