@@ -47,9 +47,9 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
 .card-h .badge .bl{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);font-weight:700;margin-top:4px}
 .card-b{padding:6px 22px 26px;overflow-y:auto;flex:1}
 
-/* mini meses inline */
-.mmini{display:flex;gap:10px;justify-content:flex-end;font-size:11px;color:var(--ink3);font-weight:500;white-space:nowrap}
-.mmini span{background:var(--bg2);border-radius:6px;padding:2px 7px}
+/* mini horas inline (feito de devido) */
+.mmini{display:flex;justify-content:flex-end;font-size:11px;color:var(--ink3);font-weight:500;white-space:nowrap}
+.mmini span{background:var(--bg2);border-radius:6px;padding:2px 9px}
 .mmini b{color:var(--navy);font-weight:700}
 
 /* sector rows (card principal) */
@@ -85,7 +85,7 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
 .prow .pevo.up{color:var(--up)} .prow .pevo.down{color:var(--down)} .prow .pevo.flat{color:var(--flat)}
 .prow .estreia{font-size:10px;font-weight:700;color:var(--gold2);background:rgba(201,162,39,.1);border:1px solid rgba(201,162,39,.3);border-radius:20px;padding:3px 9px}
 .emptyp{color:var(--ink3);font-size:13px;text-align:center;padding:40px 10px;font-weight:500}
-.prow{cursor:pointer;grid-template-columns:32px 1fr auto 78px !important}
+.prow{cursor:pointer;grid-template-columns:32px 1fr auto auto 64px !important}
 .prow:hover{background:var(--bg2)}
 .prow .pevo small{display:block;font-size:9px;font-weight:600;color:var(--ink3);margin-top:1px;letter-spacing:.03em;text-align:right}
 /* status pill atual da pessoa */
@@ -123,19 +123,9 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
 .pdweeks{padding:16px 26px 24px;overflow-y:auto}
 .pdweeks .wt{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);font-weight:700;margin:4px 0 6px}
 .pdweeks .wtsub{font-size:11px;color:var(--ink3);font-weight:500;margin-bottom:16px}
-/* gráfico de colunas semanais */
-.chart{position:relative;display:flex;align-items:flex-end;gap:6px;height:190px;padding:22px 0 0;border-bottom:2px solid var(--line);margin-bottom:6px}
-.chart .goal{position:absolute;left:0;right:0;border-top:2px dashed #9fb3c4;z-index:1}
-.chart .goal .gl{position:absolute;right:0;top:-8px;font-size:9px;color:#7a90a2;background:#fff;padding:0 4px;font-weight:700}
-.col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:0;position:relative;min-width:0}
-.col .barwrap{width:100%;display:flex;align-items:flex-end;justify-content:center;flex:1}
-.col .bar{width:76%;max-width:26px;border-radius:5px 5px 0 0;transition:.3s;min-height:2px}
-.col .bar.hit{background:linear-gradient(180deg,#3fb37f,#2e9e6b)}
-.col .bar.miss{background:linear-gradient(180deg,#e58585,#d15757)}
-.col .bar.zero{background:#d7dee5}
-.col .cpct{font-size:9.5px;font-weight:800;margin-bottom:3px;font-variant-numeric:tabular-nums}
-.col .cpct.hit{color:#2e9e6b} .col .cpct.miss{color:#d15757} .col .cpct.zero{color:var(--ink3)}
-.chart-x{display:flex;gap:6px;margin-top:6px}
+/* gráfico de LINHA semanal */
+.linechart{margin:6px 0 2px}
+.chart-x{display:flex;gap:6px;margin-top:2px}
 .chart-x .xl{flex:1;text-align:center;font-size:8.5px;color:var(--ink3);font-weight:600;line-height:1.3;min-width:0}
 /* detalhe horas por semana (lista abaixo do gráfico) */
 .wkhours{margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:6px 18px}
@@ -206,9 +196,12 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
 (function(){
   const D = window.TIMESHEET_DATA;
   const MESES3 = ['Julho','Agosto','Setembro'];
+  const DU = D.dias_uteis || {Julho:23,Agosto:21,Setembro:8};
   const fmtPct = v => Math.round(v)+'%';
-  // média dos 3 meses = desempenho médio
-  function mediaDe(pct){ return (pct.Julho+pct.Agosto+pct.Setembro)/3; }
+  // desempenho do período = soma horas feitas / soma horas devidas (meta/dia × dias úteis do mês)
+  function devidoDe(meta){ return meta*(DU.Julho+DU.Agosto+DU.Setembro); }
+  function feitoDe(horas){ return horas.Julho+horas.Agosto+horas.Setembro; }
+  function pctPeriodo(horas, meta){ const d=devidoDe(meta); return d>0? feitoDe(horas)/d*100 : 0; }
 
   // status pela régua (% já é sobre a meta individual, cortes iguais p/ todos)
   function statusOf(p){
@@ -228,61 +221,62 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
       <div class="lg"><span class="dot" style="background:#157a4c"></span><b>Estendido</b><span>107–128%</span></div>
       <div class="lg"><span class="dot" style="background:#c9a227"></span><b>Excedente</b><span>&gt;128,6%</span></div>
     </div>
-    <div class="lgnote">média dos 3 meses (jul·ago·set) do % da meta individual · adv. 7h/dia · estag. 5h/dia</div>
+    <div class="lgnote">% = horas registradas ÷ horas da meta no período · meta: adv./financeiro 7h/dia · estagiário 5h/dia</div>
   </div>`;
 
   function sectorData(){
-    let arr=[];
-    for(const [nome,v] of Object.entries(D.setores)){
-      if((v.Julho+v.Agosto+v.Setembro)===0) continue;
-      const med=mediaDe(v);
-      arr.push({nome,n:v.n,jul:v.Julho,ago:v.Agosto,set:v.Setembro,media:med});
+    // agregar horas feitas e devidas por setor (somando as pessoas)
+    const agg={};
+    for(const [nome,v] of Object.entries(D.colaboradores)){
+      const a=v.area||'Sem área';
+      if(!agg[a]) agg[a]={nome:a,n:0,feito:0,devido:0};
+      agg[a].n++;
+      agg[a].feito+=feitoDe(v.horas);
+      agg[a].devido+=devidoDe(v.meta);
     }
-    arr.sort((a,b)=> b.media-a.media);
+    let arr=Object.values(agg).filter(s=>s.feito>0).map(s=>({
+      ...s, pct: s.devido>0? s.feito/s.devido*100 : 0
+    }));
+    arr.sort((a,b)=> b.pct-a.pct);
     return arr;
   }
   function peopleOf(area){
     let arr=Object.entries(D.colaboradores).filter(([n,v])=>v.area===area).map(([n,v])=>{
-      const med=mediaDe(v.pct);
-      return {nome:n,cargo:v.cargo,jul:v.pct.Julho,ago:v.pct.Agosto,set:v.pct.Setembro,media:med};
+      const feito=feitoDe(v.horas), devido=devidoDe(v.meta);
+      return {nome:n,cargo:v.cargo,feito,devido,pct: devido>0? feito/devido*100 : 0};
     });
-    arr.sort((a,b)=> b.media-a.media);
+    arr.sort((a,b)=> b.pct-a.pct);
     return arr;
   }
 
   const SECTORS = sectorData();
-  const maxMedia=Math.max(100,...SECTORS.map(s=>s.media));
+  const maxPctS=Math.max(100,...SECTORS.map(s=>s.pct));
 
   // ---- montar slides: [principal] + [um por setor] ----
   const track=document.getElementById('track');
   const slidesMeta=[{type:'principal'}].concat(SECTORS.map(s=>({type:'setor',area:s.nome})));
 
-  function mesesInline(jul,ago,set){
-    return `<div class="mmini">
-      <span>J <b>${jul.toFixed(0)}</b></span>
-      <span>A <b>${ago.toFixed(0)}</b></span>
-      <span>S <b>${set.toFixed(0)}*</b></span>
-    </div>`;
+  function horasInline(feito,devido){
+    return `<div class="mmini"><span><b>${Math.round(feito)}h</b> de ${Math.round(devido)}h</span></div>`;
   }
   function principalHTML(){
     const rows=SECTORS.map((s,i)=>{
-      const st=statusOf(s.media);
-      const w=Math.max(5,s.media/maxMedia*100);
+      const st=statusOf(s.pct);
+      const w=Math.max(5,s.pct/maxPctS*100);
       return `<div class="srow r${i+1}" data-idx="${i+1}">
         <div class="pos">${i+1}</div>
         <div class="sinfo"><div class="sname">${s.nome}</div>
-          <div class="ssub">${s.n} pessoa(s) · média dos 3 meses</div></div>
-        ${mesesInline(s.jul,s.ago,s.set)}
+          <div class="ssub">${s.n} pessoa(s) · ${Math.round(s.feito)}h de ${Math.round(s.devido)}h no período</div></div>
         <div class="track2"><i style="width:${w}%;background:linear-gradient(90deg,${statusColor(st.k)}bb,${statusColor(st.k)})"></i></div>
-        <div class="evo" style="color:${statusColor(st.k)}">${fmtPct(s.media)}<small>média</small></div>
+        <div class="evo" style="color:${statusColor(st.k)}">${fmtPct(s.pct)}<small>da meta</small></div>
         <div class="go">›</div>
       </div>`;
     }).join('');
     return `<div class="card">
       <div class="card-h"><div class="htext">
         <div class="eyebrow">Card principal · por setor</div>
-        <h2>Desempenho médio por setor</h2>
-        <div class="desc">Média do % da meta nos 3 meses (jul · ago · set, até 13/09). Clique num setor para abrir o card dele.</div>
+        <h2>Desempenho por setor</h2>
+        <div class="desc">Horas registradas ÷ horas da meta no período (01/07 a 13/09). Clique num setor para abrir o card dele.</div>
       </div></div>
       <div class="card-b"><div class="slist">${rows}</div></div>
       ${LEGEND}
@@ -292,21 +286,22 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
   function setorHTML(area){
     const s=SECTORS.find(x=>x.nome===area);
     const ppl=peopleOf(area);
-    const bst=statusOf(s.media);
-    const badge=`<div class="bv" style="color:${statusColor(bst.k)}">${fmtPct(s.media)}</div><div class="bl">média 3 meses</div>`;
+    const bst=statusOf(s.pct);
+    const badge=`<div class="bv" style="color:${statusColor(bst.k)}">${fmtPct(s.pct)}</div><div class="bl">${Math.round(s.feito)}h de ${Math.round(s.devido)}h</div>`;
     const rows = ppl.length ? ppl.map((p,i)=>{
-      const st=statusOf(p.media); // status pela MÉDIA dos 3 meses
+      const st=statusOf(p.pct);
       return `<div class="prow r${i+1}" data-nome="${encodeURIComponent(p.nome)}"><div class="ppos">${i+1}</div>
         <div class="pname">${p.nome}<small>${p.cargo||''}</small></div>
+        ${horasInline(p.feito,p.devido)}
         <span class="spill ${st.k}">${st.t}</span>
-        <div class="pevo" style="color:${statusColor(st.k)}">${fmtPct(p.media)}<small>média</small></div></div>`;
+        <div class="pevo" style="color:${statusColor(st.k)}">${fmtPct(p.pct)}</div></div>`;
     }).join('') : '<div class="emptyp">Sem colaboradores com registro neste setor.</div>';
     return `<div class="card">
       <div class="card-h">
         <div class="htext">
           <div class="eyebrow">Setor</div>
           <h2>${area}</h2>
-          <div class="desc">Desempenho médio (jul · ago · set) · ${s.n} pessoa(s) · clique numa pessoa para ver semana a semana</div>
+          <div class="desc">Horas registradas ÷ meta no período · ${s.n} pessoa(s) · clique numa pessoa para ver semana a semana</div>
         </div>
         <div class="badge">${badge}</div>
       </div>
@@ -358,55 +353,65 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
     const meta=v.meta;
     document.getElementById('pd_name').textContent=nome;
     document.getElementById('pd_sub').textContent=`${v.area} · ${v.cargo||''} · meta ${meta}h/dia`;
-    // meses (mantém o resumo dos 3 meses no topo)
+    // meses: dias úteis × meta = deveria registrar  vs  registrou
     document.getElementById('pd_months').innerHTML=['Julho','Agosto','Setembro'].map(mn=>{
-      const p=v.pct[mn], h=v.horas[mn], st=statusOf(p);
+      const h=v.horas[mn], du=DU[mn], deveria=meta*du, p=deveria>0?h/deveria*100:0, st=statusOf(p);
       return `<div class="pmon"><div class="mn">${mn}${mn==='Setembro'?' *':''}</div>
-        <div class="mp" style="color:${statusColor(st.k)}">${p.toFixed(0)}%</div>
-        <div class="mh">${h.toFixed(0)}h · ${st.t}</div></div>`;
+        <div class="mp" style="color:${statusColor(st.k)}">${Math.round(h)}h</div>
+        <div class="mh">de ${Math.round(deveria)}h (${du} dias) · ${st.t}</div></div>`;
     }).join('');
 
-    // === GRÁFICO DE COLUNAS SEMANAIS (bateu = verde / não bateu = vermelho) ===
-    // meta esperada da semana = meta/dia × dias úteis daquela semana
+    // === GRÁFICO DE LINHA SEMANAL (horas registradas vs linha da meta) ===
     const semanas=labels.map((lab,i)=>{
       const feito=horasSem[i]||0;
       const esperado=meta*(duSem[i]||0);
       const pct=esperado>0? feito/esperado*100 : 0;
-      const bateu=pct>=97.5;
-      const cls=feito<=0?'zero':(bateu?'hit':'miss');
+      const cls=feito<=0?'zero':(pct>=97.5?'hit':'miss');
       return {lab, feito, esperado, pct, cls};
     });
-    const maxPct=Math.max(120,...semanas.map(s=>s.pct)); // teto do gráfico
-    const goalTop=(1-100/maxPct)*100; // posição da linha de meta (100%)
-    const cols=semanas.map(s=>{
-      const h=s.pct<=0?0:Math.min(s.pct,maxPct)/maxPct*100;
-      const pctTxt=s.feito<=0?'–':Math.round(s.pct)+'%';
-      return `<div class="col">
-        <div class="cpct ${s.cls}">${pctTxt}</div>
-        <div class="barwrap"><div class="bar ${s.cls}" style="height:${h}%"></div></div>
-      </div>`;
+    const maxH=Math.max(...semanas.map(s=>Math.max(s.feito,s.esperado)),1)*1.12;
+    const W=680, H=210, padL=8, padR=8, padT=16, padB=8;
+    const innerW=W-padL-padR, innerH=H-padT-padB;
+    const n=semanas.length;
+    const xAt=i=> padL + (n<=1?innerW/2 : innerW*i/(n-1));
+    const yAt=h=> padT + innerH*(1 - h/maxH);
+    // polilinha das horas feitas
+    const ptsFeito=semanas.map((s,i)=>`${xAt(i).toFixed(1)},${yAt(s.feito).toFixed(1)}`).join(' ');
+    // linha da meta (varia por semana pelos dias úteis) -> polilinha também
+    const ptsMeta=semanas.map((s,i)=>`${xAt(i).toFixed(1)},${yAt(s.esperado).toFixed(1)}`).join(' ');
+    const dots=semanas.map((s,i)=>{
+      const col=s.cls==='hit'?'#2e9e6b':(s.cls==='miss'?'#d15757':'#c3cdd6');
+      return `<circle cx="${xAt(i).toFixed(1)}" cy="${yAt(s.feito).toFixed(1)}" r="4.5" fill="${col}" stroke="#fff" stroke-width="1.5"/>`;
     }).join('');
+    const valLabels=semanas.map((s,i)=>{
+      const y=yAt(s.feito)-9;
+      const col=s.cls==='hit'?'#2e9e6b':(s.cls==='miss'?'#d15757':'#93a6b6');
+      return `<text x="${xAt(i).toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" font-size="10" font-weight="700" fill="${col}">${Math.round(s.feito)}</text>`;
+    }).join('');
+    const svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet" style="display:block">
+      <polyline points="${ptsMeta}" fill="none" stroke="#9fb3c4" stroke-width="2" stroke-dasharray="5 4"/>
+      <polyline points="${ptsFeito}" fill="none" stroke="#16324f" stroke-width="2.5"/>
+      ${dots}${valLabels}
+    </svg>`;
     const xlabels=semanas.map(s=>`<div class="xl">${s.lab}</div>`).join('');
     // lista de horas feito/esperado por semana
     const lista=semanas.map(s=>{
-      const v2=s.feito<=0?`<span class="wkv zero">0h de ${s.esperado.toFixed(0)}h</span>`
-        :`<span class="wkv ${s.cls}">${s.feito.toFixed(0)}h de ${s.esperado.toFixed(0)}h</span>`;
+      const v2=s.feito<=0?`<span class="wkv zero">0h de ${Math.round(s.esperado)}h</span>`
+        :`<span class="wkv ${s.cls}">${Math.round(s.feito)}h de ${Math.round(s.esperado)}h</span>`;
       return `<div class="wkh"><span class="wkl">${s.lab}</span>${v2}</div>`;
     }).join('');
 
     document.getElementById('pd_weeks').innerHTML=`
-      <div class="wt">Evolução semana a semana</div>
-      <div class="wtsub">Bateu a meta de horas da semana? Verde = bateu (≥97,5%) · vermelho = ficou abaixo. Meta da semana = ${meta}h/dia × dias úteis. (* setembro parcial, até 13/09)</div>
-      <div class="chart">
-        <div class="goal" style="top:${goalTop}%"><span class="gl">meta 100%</span></div>
-        ${cols}
-      </div>
+      <div class="wt">Evolução semana a semana · horas registradas</div>
+      <div class="wtsub">Linha escura = horas que registrou · linha tracejada = meta da semana (${meta}h/dia × dias úteis). Ponto verde = bateu, vermelho = abaixo. (* setembro parcial, até 13/09)</div>
+      <div class="linechart">${svg}</div>
       <div class="chart-x">${xlabels}</div>
       <div class="wkhours">${lista}</div>
       <div class="wklegend">
-        <span><i style="background:#2e9e6b"></i> bateu a meta</span>
-        <span><i style="background:#d15757"></i> abaixo da meta</span>
-        <span><i style="background:#d7dee5"></i> sem registro</span>
+        <span><i style="background:#16324f;border-radius:2px"></i> registrou</span>
+        <span><i style="background:#9fb3c4;border-radius:2px"></i> meta da semana</span>
+        <span><i style="background:#2e9e6b"></i> bateu</span>
+        <span><i style="background:#d15757"></i> abaixo</span>
       </div>`;
     modal.classList.add('open');
     document.querySelector('.pdweeks').scrollTop=0;
