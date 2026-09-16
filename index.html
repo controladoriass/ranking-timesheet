@@ -348,9 +348,11 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
     const meta=v.meta;
     document.getElementById('pd_name').textContent=nome;
     document.getElementById('pd_sub').textContent=`${v.area} · ${v.cargo||''} · meta ${meta}h/dia`;
-    // meses: horas registradas em destaque (verde) + meta explícita (dias × h/dia)
+    // meses: horas registradas em destaque + meta CHEIA do mês (dias úteis do mês inteiro × h/dia)
+    // setembro usa 21 dias úteis (mês inteiro, feriado 07/09 descontado); a tag "parcial" avisa que o registrado ainda não fechou
+    const DU_MES_CHEIO={Julho:23, Agosto:21, Setembro:21};
     document.getElementById('pd_months').innerHTML=['Julho','Agosto','Setembro'].map(mn=>{
-      const h=v.horas[mn], du=DU[mn], deveria=meta*du, parcial=(mn==='Setembro');
+      const h=v.horas[mn], du=DU_MES_CHEIO[mn], deveria=meta*du, parcial=(mn==='Setembro');
       return `<div class="pmon${parcial?' parcial':''}"><div class="mn">${mn}</div>
         <div class="mp" style="color:#2e9e6b">${Math.round(h)}h <span class="mpl">registradas</span></div>
         <div class="mh">meta: ${du} dias úteis × ${meta} horas = <b>${Math.round(deveria)}h</b></div>
