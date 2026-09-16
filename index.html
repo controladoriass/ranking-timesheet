@@ -109,7 +109,7 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
 /* painel resumo da pessoa (semana a semana) */
 .pdetail{position:fixed;inset:0;background:rgba(16,36,57,.5);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
 .pdetail.open{display:flex}
-.pdbox{background:#fff;border-radius:20px;max-width:920px;width:100%;max-height:88vh;overflow:hidden;box-shadow:0 40px 90px rgba(16,36,57,.4);display:flex;flex-direction:column}
+.pdbox{background:#fff;border-radius:20px;max-width:1040px;width:100%;max-height:90vh;overflow:hidden;box-shadow:0 40px 90px rgba(16,36,57,.4);display:flex;flex-direction:column}
 .pdhead{padding:22px 26px 18px;border-bottom:1px solid var(--line2);display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
 .pdhead .pname2{font-size:20px;font-weight:800;color:var(--navy)}
 .pdhead .psub2{font-size:12px;color:var(--ink3);margin-top:4px;font-weight:500}
@@ -120,7 +120,9 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
 .pmon.parcial{border-style:dashed;border-color:#c9a227}
 .pmon .mn{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);font-weight:700}
 .pmon .mp{font-size:24px;font-weight:900;color:var(--navy);font-variant-numeric:tabular-nums;margin-top:3px}
-.pmon .mh{font-size:10.5px;color:var(--ink3);font-weight:600;margin-top:2px;line-height:1.3}
+.pmon .mp .mpl{font-size:11px;font-weight:700;color:var(--ink3)}
+.pmon .mh{font-size:11px;color:var(--ink3);font-weight:500;margin-top:4px;line-height:1.35}
+.pmon .mh b{color:var(--navy);font-weight:700}
 .pmon .ptag{margin-top:6px;font-size:9px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#a17d15;background:rgba(201,162,39,.12);border-radius:20px;padding:2px 8px;display:inline-block}
 .pdweeks{padding:16px 26px 24px;overflow-y:auto}
 .pdweeks .wt{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);font-weight:700;margin:4px 0 6px}
@@ -355,8 +357,8 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
     document.getElementById('pd_months').innerHTML=['Julho','Agosto','Setembro'].map(mn=>{
       const h=v.horas[mn], du=DU[mn], deveria=meta*du, parcial=(mn==='Setembro');
       return `<div class="pmon${parcial?' parcial':''}"><div class="mn">${mn}</div>
-        <div class="mp" style="color:#2e9e6b">${Math.round(h)}h</div>
-        <div class="mh">registrou · meta ${du} dias úteis × ${meta}h = ${Math.round(deveria)}h</div>
+        <div class="mp" style="color:#2e9e6b">${Math.round(h)}h <span class="mpl">registradas</span></div>
+        <div class="mh">meta: ${du} dias úteis × ${meta} horas = <b>${Math.round(deveria)}h</b></div>
         ${parcial?'<div class="ptag">parcial · só até 13/09</div>':''}</div>`;
     }).join('');
 
@@ -375,13 +377,13 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
     const innerW=W-padL-padR, innerH=H-padT-padB;
     const xAt=i=> padL + (n<=1?innerW/2 : innerW*i/(n-1));
     const yAt=h=> padT + innerH*(1 - h/maxH);
-    // grades horizontais de referência (0, e alguns níveis de horas)
+    // grades horizontais de referência (0, e alguns níveis de horas) — mais escuras/visíveis
     const step = maxH>50?10:5;
     let grid='';
     for(let g=0; g<=maxH; g+=step){
       const y=yAt(g);
-      grid+=`<line x1="${padL}" y1="${y.toFixed(1)}" x2="${W-padR}" y2="${y.toFixed(1)}" stroke="#eef2f6" stroke-width="1"/>`+
-            `<text x="${padL-8}" y="${(y+3).toFixed(1)}" text-anchor="end" font-size="10" fill="#adbccb">${g}h</text>`;
+      grid+=`<line x1="${padL}" y1="${y.toFixed(1)}" x2="${W-padR}" y2="${y.toFixed(1)}" stroke="#cdd7e0" stroke-width="1"/>`+
+            `<text x="${padL-8}" y="${(y+3).toFixed(1)}" text-anchor="end" font-size="11" font-weight="600" fill="#6f8aa0">${g}h</text>`;
     }
     const ptsFeito=semanas.map((s,i)=>`${xAt(i).toFixed(1)},${yAt(s.feito).toFixed(1)}`).join(' ');
     const ptsMeta=semanas.map((s,i)=>`${xAt(i).toFixed(1)},${yAt(s.esperado).toFixed(1)}`).join(' ');
