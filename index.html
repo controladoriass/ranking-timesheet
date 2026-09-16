@@ -109,7 +109,7 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
 /* painel resumo da pessoa (semana a semana) */
 .pdetail{position:fixed;inset:0;background:rgba(16,36,57,.5);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
 .pdetail.open{display:flex}
-.pdbox{background:#fff;border-radius:20px;max-width:640px;width:100%;max-height:86vh;overflow:hidden;box-shadow:0 40px 90px rgba(16,36,57,.4);display:flex;flex-direction:column}
+.pdbox{background:#fff;border-radius:20px;max-width:920px;width:100%;max-height:88vh;overflow:hidden;box-shadow:0 40px 90px rgba(16,36,57,.4);display:flex;flex-direction:column}
 .pdhead{padding:22px 26px 18px;border-bottom:1px solid var(--line2);display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
 .pdhead .pname2{font-size:20px;font-weight:800;color:var(--navy)}
 .pdhead .psub2{font-size:12px;color:var(--ink3);margin-top:4px;font-weight:500}
@@ -127,12 +127,12 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
 .pdweeks .wtsub{font-size:11px;color:var(--ink3);font-weight:500;margin-bottom:16px}
 /* gráfico de LINHA semanal */
 .linechart{margin:10px 0 6px}
-/* lista de semanas por extenso */
-.wklist{margin-top:14px}
-.wkh2{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 2px;border-bottom:1px solid var(--line2);font-size:12.5px}
-.wkh2:last-child{border-bottom:0}
+/* lista de semanas por extenso (2 colunas no modal largo) */
+.wklist{margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:0 26px}
+.wkh2{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 2px;border-bottom:1px solid var(--line2);font-size:12px}
 .wkh2 .wkl2{color:var(--ink3);font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
 .wkh2 .wkv2{color:var(--ink2);font-weight:500;text-align:right}
+@media(max-width:640px){ .wklist{grid-template-columns:1fr} }
 .wklegend{display:flex;flex-wrap:wrap;gap:10px 16px;justify-content:center;margin-top:12px;font-size:11px;color:var(--ink2)}
 .wklegend span{display:flex;align-items:center;gap:6px}
 .wklegend i{width:11px;height:11px;border-radius:50%;display:inline-block}
@@ -356,8 +356,8 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
       const h=v.horas[mn], du=DU[mn], deveria=meta*du, parcial=(mn==='Setembro');
       return `<div class="pmon${parcial?' parcial':''}"><div class="mn">${mn}</div>
         <div class="mp" style="color:#2e9e6b">${Math.round(h)}h</div>
-        <div class="mh">registrou · meta ${du} × ${meta}h = ${Math.round(deveria)}h</div>
-        ${parcial?'<div class="ptag">parcial · até 13/09</div>':''}</div>`;
+        <div class="mh">registrou · meta ${du} dias úteis × ${meta}h = ${Math.round(deveria)}h</div>
+        ${parcial?'<div class="ptag">parcial · só até 13/09</div>':''}</div>`;
     }).join('');
 
     // === GRÁFICO DE LINHA SEMANAL (horas registradas vs linha da meta) ===
@@ -368,10 +368,10 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
       const cls=feito<=0?'zero':(pct>=97.5?'hit':'miss');
       return {lab, feito, esperado, pct, cls};
     });
-    // gráfico maior e mais alto; SVG escala pela largura (viewBox), não rola horizontal
+    // gráfico deitado (paisagem): largo e baixo, escala pela largura (viewBox), não rola horizontal
     const maxH=Math.max(...semanas.map(s=>Math.max(s.feito,s.esperado)),1)*1.18;
     const n=semanas.length;
-    const W=920, H=380, padL=38, padR=22, padT=40, padB=30;
+    const W=1040, H=300, padL=40, padR=24, padT=38, padB=32;
     const innerW=W-padL-padR, innerH=H-padT-padB;
     const xAt=i=> padL + (n<=1?innerW/2 : innerW*i/(n-1));
     const yAt=h=> padT + innerH*(1 - h/maxH);
@@ -394,11 +394,10 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
       const col=s.cls==='hit'?'#2e9e6b':(s.cls==='miss'?'#d15757':'#93a6b6');
       return `<text x="${xAt(i).toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" font-size="12" font-weight="800" fill="${col}">${Math.round(s.feito)}h</text>`;
     }).join('');
-    // datas no eixo x, alternadas em duas alturas pra não amassar
+    // datas no eixo x (início de cada semana; cabe bem no modal largo)
     const xlabels=semanas.map((s,i)=>{
-      const dy = i%2===0? H-10 : H-1;
       const parts=s.lab.split('–');
-      return `<text x="${xAt(i).toFixed(1)}" y="${dy}" text-anchor="middle" font-size="9.5" fill="#7a90a2" font-weight="600">${parts[0]}</text>`;
+      return `<text x="${xAt(i).toFixed(1)}" y="${H-10}" text-anchor="middle" font-size="10.5" fill="#7a90a2" font-weight="600">${parts[0]}</text>`;
     }).join('');
     const svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet" style="display:block">
       ${grid}
