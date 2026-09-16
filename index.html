@@ -124,22 +124,18 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
 .pdweeks .wt{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);font-weight:700;margin:4px 0 6px}
 .pdweeks .wtsub{font-size:11px;color:var(--ink3);font-weight:500;margin-bottom:16px}
 /* gráfico de LINHA semanal */
-.linechart{margin:6px 0 2px}
-.chart-x{display:flex;gap:6px;margin-top:2px}
-.chart-x .xl{flex:1;text-align:center;font-size:8.5px;color:var(--ink3);font-weight:600;line-height:1.3;min-width:0}
-/* detalhe horas por semana (lista abaixo do gráfico) */
-.wkhours{margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:6px 18px}
-.wkh{display:flex;justify-content:space-between;gap:10px;font-size:11.5px;padding:5px 0;border-bottom:1px solid var(--line2)}
-.wkh .wkl{color:var(--ink2);font-weight:600}
-.wkh .wkv{font-weight:700;font-variant-numeric:tabular-nums}
-.wkh .wkv.hit{color:#2e9e6b} .wkh .wkv.miss{color:#d15757} .wkh .wkv.zero{color:var(--ink3)}
-.wklegend{display:flex;gap:16px;justify-content:center;margin-top:14px;font-size:11px;color:var(--ink2)}
+.linechart{margin:10px 0 6px}
+/* lista de semanas por extenso */
+.wklist{margin-top:14px}
+.wkh2{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 2px;border-bottom:1px solid var(--line2);font-size:12.5px}
+.wkh2:last-child{border-bottom:0}
+.wkh2 .wkl2{color:var(--ink3);font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.wkh2 .wkv2{color:var(--ink2);font-weight:500;text-align:right}
+.wklegend{display:flex;flex-wrap:wrap;gap:10px 16px;justify-content:center;margin-top:12px;font-size:11px;color:var(--ink2)}
 .wklegend span{display:flex;align-items:center;gap:6px}
-.wklegend i{width:11px;height:11px;border-radius:3px;display:inline-block}
+.wklegend i{width:11px;height:11px;border-radius:50%;display:inline-block}
 @media(max-width:560px){
-  .col .cpct{font-size:8px}
-  .chart-x .xl{font-size:7px}
-  .wkhours{grid-template-columns:1fr}
+  .wkh2{font-size:11.5px}
 }
 
 /* dots */
@@ -353,12 +349,12 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
     const meta=v.meta;
     document.getElementById('pd_name').textContent=nome;
     document.getElementById('pd_sub').textContent=`${v.area} · ${v.cargo||''} · meta ${meta}h/dia`;
-    // meses: dias úteis × meta = deveria registrar  vs  registrou
+    // meses: horas registradas em destaque (verde) + meta explícita (dias × h/dia)
     document.getElementById('pd_months').innerHTML=['Julho','Agosto','Setembro'].map(mn=>{
-      const h=v.horas[mn], du=DU[mn], deveria=meta*du, p=deveria>0?h/deveria*100:0, st=statusOf(p);
+      const h=v.horas[mn], du=DU[mn], deveria=meta*du;
       return `<div class="pmon"><div class="mn">${mn}${mn==='Setembro'?' *':''}</div>
-        <div class="mp" style="color:${statusColor(st.k)}">${Math.round(h)}h</div>
-        <div class="mh">de ${Math.round(deveria)}h (${du} dias) · ${st.t}</div></div>`;
+        <div class="mp" style="color:#2e9e6b">${Math.round(h)}h</div>
+        <div class="mh">registrou · meta ${du} × ${meta} = ${Math.round(deveria)}h</div></div>`;
     }).join('');
 
     // === GRÁFICO DE LINHA SEMANAL (horas registradas vs linha da meta) ===
@@ -369,50 +365,64 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
       const cls=feito<=0?'zero':(pct>=97.5?'hit':'miss');
       return {lab, feito, esperado, pct, cls};
     });
-    const maxH=Math.max(...semanas.map(s=>Math.max(s.feito,s.esperado)),1)*1.12;
-    const W=680, H=210, padL=8, padR=8, padT=16, padB=8;
-    const innerW=W-padL-padR, innerH=H-padT-padB;
+    // gráfico maior e mais espaçado; eixo com folga em cima e embaixo
+    const maxH=Math.max(...semanas.map(s=>Math.max(s.feito,s.esperado)),1)*1.18;
     const n=semanas.length;
+    const W=920, H=300, padL=34, padR=20, padT=34, padB=26;
+    const innerW=W-padL-padR, innerH=H-padT-padB;
     const xAt=i=> padL + (n<=1?innerW/2 : innerW*i/(n-1));
     const yAt=h=> padT + innerH*(1 - h/maxH);
-    // polilinha das horas feitas
+    // grades horizontais de referência (0, e alguns níveis de horas)
+    const step = maxH>50?10:5;
+    let grid='';
+    for(let g=0; g<=maxH; g+=step){
+      const y=yAt(g);
+      grid+=`<line x1="${padL}" y1="${y.toFixed(1)}" x2="${W-padR}" y2="${y.toFixed(1)}" stroke="#eef2f6" stroke-width="1"/>`+
+            `<text x="${padL-8}" y="${(y+3).toFixed(1)}" text-anchor="end" font-size="10" fill="#adbccb">${g}h</text>`;
+    }
     const ptsFeito=semanas.map((s,i)=>`${xAt(i).toFixed(1)},${yAt(s.feito).toFixed(1)}`).join(' ');
-    // linha da meta (varia por semana pelos dias úteis) -> polilinha também
     const ptsMeta=semanas.map((s,i)=>`${xAt(i).toFixed(1)},${yAt(s.esperado).toFixed(1)}`).join(' ');
     const dots=semanas.map((s,i)=>{
       const col=s.cls==='hit'?'#2e9e6b':(s.cls==='miss'?'#d15757':'#c3cdd6');
-      return `<circle cx="${xAt(i).toFixed(1)}" cy="${yAt(s.feito).toFixed(1)}" r="4.5" fill="${col}" stroke="#fff" stroke-width="1.5"/>`;
+      return `<circle cx="${xAt(i).toFixed(1)}" cy="${yAt(s.feito).toFixed(1)}" r="5.5" fill="${col}" stroke="#fff" stroke-width="2"/>`;
     }).join('');
     const valLabels=semanas.map((s,i)=>{
-      const y=yAt(s.feito)-9;
+      const y=yAt(s.feito)-12;
       const col=s.cls==='hit'?'#2e9e6b':(s.cls==='miss'?'#d15757':'#93a6b6');
-      return `<text x="${xAt(i).toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" font-size="10" font-weight="700" fill="${col}">${Math.round(s.feito)}</text>`;
+      return `<text x="${xAt(i).toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" font-size="12" font-weight="800" fill="${col}">${Math.round(s.feito)}h</text>`;
+    }).join('');
+    // datas no eixo x, alternadas em duas alturas pra não amassar
+    const xlabels=semanas.map((s,i)=>{
+      const dy = i%2===0? H-10 : H-1;
+      const parts=s.lab.split('–');
+      return `<text x="${xAt(i).toFixed(1)}" y="${dy}" text-anchor="middle" font-size="9.5" fill="#7a90a2" font-weight="600">${parts[0]}</text>`;
     }).join('');
     const svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet" style="display:block">
-      <polyline points="${ptsMeta}" fill="none" stroke="#9fb3c4" stroke-width="2" stroke-dasharray="5 4"/>
-      <polyline points="${ptsFeito}" fill="none" stroke="#16324f" stroke-width="2.5"/>
-      ${dots}${valLabels}
+      ${grid}
+      <polyline points="${ptsMeta}" fill="none" stroke="#9fb3c4" stroke-width="2.5" stroke-dasharray="6 5"/>
+      <polyline points="${ptsFeito}" fill="none" stroke="#16324f" stroke-width="3"/>
+      ${dots}${valLabels}${xlabels}
     </svg>`;
-    const xlabels=semanas.map(s=>`<div class="xl">${s.lab}</div>`).join('');
-    // lista de horas feito/esperado por semana
+    // lista de horas por semana, texto por extenso
     const lista=semanas.map(s=>{
-      const v2=s.feito<=0?`<span class="wkv zero">0h de ${Math.round(s.esperado)}h</span>`
-        :`<span class="wkv ${s.cls}">${Math.round(s.feito)}h de ${Math.round(s.esperado)}h</span>`;
-      return `<div class="wkh"><span class="wkl">${s.lab}</span>${v2}</div>`;
+      const cor=s.cls==='hit'?'#2e9e6b':(s.cls==='miss'?'#d15757':'#93a6b6');
+      const txt=s.feito<=0
+        ? `não registrou · meta ${Math.round(s.esperado)}h`
+        : `<b style="color:${cor}">${Math.round(s.feito)}h registradas</b> de ${Math.round(s.esperado)}h da meta`;
+      return `<div class="wkh2"><span class="wkl2">${s.lab}</span><span class="wkv2">${txt}</span></div>`;
     }).join('');
 
     document.getElementById('pd_weeks').innerHTML=`
       <div class="wt">Evolução semana a semana · horas registradas</div>
-      <div class="wtsub">Linha escura = horas que registrou · linha tracejada = meta da semana (${meta}h/dia × dias úteis). Ponto verde = bateu, vermelho = abaixo. (* setembro parcial, até 13/09)</div>
+      <div class="wtsub">Linha escura = horas que a pessoa registrou · linha tracejada cinza = a meta daquela semana (${meta}h/dia × dias úteis). Ponto verde = bateu a meta, vermelho = ficou abaixo. (* setembro parcial, até 13/09)</div>
       <div class="linechart">${svg}</div>
-      <div class="chart-x">${xlabels}</div>
-      <div class="wkhours">${lista}</div>
       <div class="wklegend">
         <span><i style="background:#16324f;border-radius:2px"></i> registrou</span>
         <span><i style="background:#9fb3c4;border-radius:2px"></i> meta da semana</span>
         <span><i style="background:#2e9e6b"></i> bateu</span>
         <span><i style="background:#d15757"></i> abaixo</span>
-      </div>`;
+      </div>
+      <div class="wklist">${lista}</div>`;
     modal.classList.add('open');
     document.querySelector('.pdweeks').scrollTop=0;
   }
