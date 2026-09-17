@@ -188,11 +188,69 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
   .srow .track2{display:none}
   .prow{grid-template-columns:26px 1fr auto}
   .prow .ppct{display:none}
+  .evobtn{top:10px;right:10px;padding:8px 12px;font-size:11px}
 }
+
+/* botão piscante "Ver Evolução" */
+.evobtn{position:fixed;top:20px;right:24px;z-index:60;display:flex;align-items:center;gap:9px;
+  background:#fff;border:1.5px solid #2e9e6b;border-radius:30px;padding:10px 18px 10px 14px;
+  cursor:pointer;box-shadow:0 6px 20px rgba(46,158,107,.28);font-family:'Montserrat',sans-serif;
+  font-weight:800;font-size:13px;color:#157a4c;transition:.2s}
+.evobtn:hover{transform:translateY(-1px);box-shadow:0 10px 26px rgba(46,158,107,.4)}
+.evobtn .dot{width:11px;height:11px;border-radius:50%;background:#2e9e6b;
+  box-shadow:0 0 0 0 rgba(46,158,107,.7);animation:pulseDot 1.5s infinite}
+@keyframes pulseDot{
+  0%{box-shadow:0 0 0 0 rgba(46,158,107,.6)}
+  70%{box-shadow:0 0 0 9px rgba(46,158,107,0)}
+  100%{box-shadow:0 0 0 0 rgba(46,158,107,0)}
+}
+
+/* modal panorama */
+.panModal{position:fixed;inset:0;background:rgba(16,36,57,.55);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:70;padding:20px}
+.panModal.open{display:flex}
+.panBox{background:#fff;border-radius:20px;max-width:1000px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 40px 90px rgba(16,36,57,.4)}
+.panHead{padding:26px 30px 16px;border-bottom:1px solid var(--line2);display:flex;justify-content:space-between;align-items:flex-start;gap:16px;position:sticky;top:0;background:#fff;z-index:2}
+.panHead h2{font-size:24px;font-weight:800;color:var(--navy)}
+.panHead .psub{font-size:12px;color:var(--ink3);margin-top:6px;max-width:600px;line-height:1.5}
+.panClose{background:var(--bg);border:1px solid var(--line);width:34px;height:34px;border-radius:10px;cursor:pointer;font-size:18px;color:var(--ink2);flex:0 0 auto}
+.panBody{padding:22px 30px 30px}
+.panStat{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px}
+.panStatCard{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:16px;text-align:center}
+.panStatCard .pv{font-size:26px;font-weight:900;color:var(--navy);font-variant-numeric:tabular-nums}
+.panStatCard .pl{font-size:10.5px;color:var(--ink3);font-weight:600;margin-top:4px;text-transform:uppercase;letter-spacing:.04em}
+.panBig{text-align:center;padding:20px;background:linear-gradient(180deg,rgba(46,158,107,.06),transparent);border-radius:16px;margin-bottom:24px}
+.panBig .pbv{font-size:44px;font-weight:900;color:#1f8a5a}
+.panBig .pbl{font-size:13px;color:var(--ink2);margin-top:6px;max-width:520px;margin-left:auto;margin-right:auto;line-height:1.5}
+.panCols{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:700px){.panCols{grid-template-columns:1fr}.panStat{grid-template-columns:1fr 1fr}}
+.panColTitle{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px}
+.panColTitle.up{color:#1f8a5a}.panColTitle.down{color:#c0413f}
+.panRow{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border-radius:10px;margin-bottom:6px;background:var(--bg)}
+.panRow .prn{font-weight:700;font-size:12.5px;color:var(--navy)}
+.panRow .prn small{display:block;font-weight:500;color:var(--ink3);font-size:10.5px}
+.panRow .prv{font-weight:800;font-size:14px;white-space:nowrap}
+.panRow .prv.up{color:#1f8a5a}.panRow .prv.down{color:#c0413f}
+.panConcl{margin-top:24px;padding:16px 18px;background:var(--bg);border-radius:14px;font-size:13px;line-height:1.7;color:var(--ink2)}
+.panConcl b{color:var(--navy)}
 </style>
 </head>
 <body>
 <div class="stage">
+
+  <button class="evobtn" id="evoBtn"><span class="dot"></span>Ver evolução</button>
+
+  <div class="panModal" id="panModal">
+    <div class="panBox">
+      <div class="panHead">
+        <div>
+          <h2>Evolução: antes e depois do acompanhamento</h2>
+          <div class="psub">Compara o desempenho médio de janeiro a junho, período sem acompanhamento, contra julho a setembro, período já acompanhado e ajustado. Considera só quem tem registro nos dois períodos, excluindo quem entrou no meio do caminho.</div>
+        </div>
+        <button class="panClose" id="panClose">✕</button>
+      </div>
+      <div class="panBody" id="panBody"></div>
+    </div>
+  </div>
 
   <div class="carousel">
     <button class="arw" id="prev" aria-label="anterior">‹</button>
@@ -605,9 +663,49 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
   bindPeople();
   document.getElementById('pd_close').addEventListener('click',()=>modal.classList.remove('open'));
   modal.addEventListener('click',e=>{ if(e.target===modal) modal.classList.remove('open'); });
-  document.addEventListener('keydown',e=>{ if(e.key==='Escape') modal.classList.remove('open'); });
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ modal.classList.remove('open'); panModal.classList.remove('open'); } });
 
   slides.forEach((s,k)=>s.classList.toggle('side',k!==0));
+
+  // ---- Painel "Ver evolução" (panorama antes x depois) ----
+  const panModal=document.getElementById('panModal');
+  function renderPanorama(){
+    const pan=D.panorama;
+    if(!pan){ document.getElementById('panBody').innerHTML='<p>Dados de panorama indisponíveis.</p>'; return; }
+    const pctMelhor=Math.round(pan.nMelhoraram/pan.nTotal*100);
+    const pctPior=Math.round(pan.nPioraram/pan.nTotal*100);
+    const linhaEvo=r=>`<div class="panRow"><div class="prn">${r.nome}<small>${r.area}</small></div>
+        <div class="prv up">${r.antes.toFixed(0)}% → ${r.depois.toFixed(0)}% <b>(${r.variacao>0?'+':''}${r.variacao.toFixed(0)}pts)</b></div></div>`;
+    const linhaCaiu=r=>`<div class="panRow"><div class="prn">${r.nome}<small>${r.area}</small></div>
+        <div class="prv down">${r.antes.toFixed(0)}% → ${r.depois.toFixed(0)}% <b>(${r.variacao.toFixed(0)}pts)</b></div></div>`;
+    document.getElementById('panBody').innerHTML=`
+      <div class="panStat">
+        <div class="panStatCard"><div class="pv">${pan.nTotal}</div><div class="pl">pessoas comparáveis</div></div>
+        <div class="panStatCard"><div class="pv" style="color:#1f8a5a">${pan.nMelhoraram}</div><div class="pl">melhoraram (${pctMelhor}%)</div></div>
+        <div class="panStatCard"><div class="pv" style="color:#c0413f">${pan.nPioraram}</div><div class="pl">pioraram (${pctPior}%)</div></div>
+        <div class="panStatCard"><div class="pv">0</div><div class="pl">ficaram estáveis</div></div>
+      </div>
+      <div class="panBig">
+        <div class="pbv">${pan.mediaAntes.toFixed(0)}% → ${pan.mediaDepois.toFixed(0)}%</div>
+        <div class="pbl">Média geral do escritório: de <b>${pan.mediaAntes.toFixed(1)}%</b> da meta em janeiro a junho para <b>${pan.mediaDepois.toFixed(1)}%</b> em julho a setembro, uma evolução de <b>+${pan.variacaoGeral.toFixed(1)} pontos</b>.</div>
+      </div>
+      <div class="panCols">
+        <div>
+          <div class="panColTitle up">Quem mais evoluiu</div>
+          ${pan.topEvoluiu.map(linhaEvo).join('')}
+        </div>
+        <div>
+          <div class="panColTitle down">Quem mais caiu</div>
+          ${pan.topCaiu.map(linhaCaiu).join('')}
+        </div>
+      </div>
+      <div class="panConcl">
+        <b>Conclusão:</b> o resultado é positivo e consistente. Considerando só quem tem registro nos dois períodos (${pan.nTotal} pessoas, excluindo quem entrou no meio do caminho), a média geral do escritório subiu de ${pan.mediaAntes.toFixed(1)}% para ${pan.mediaDepois.toFixed(1)}% da meta, uma evolução de ${pan.variacaoGeral.toFixed(1)} pontos. Do total, ${pan.nMelhoraram} de ${pan.nTotal} pessoas (${pctMelhor}%) melhoraram e ${pan.nPioraram} de ${pan.nTotal} (${pctPior}%) pioraram; ninguém ficou estável, todo mundo mudou para algum lado. Isso confirma que o acompanhamento do timesheet, iniciado em julho, teve efeito real na produtividade da equipe.
+      </div>`;
+  }
+  document.getElementById('evoBtn').addEventListener('click',()=>{ renderPanorama(); panModal.classList.add('open'); });
+  document.getElementById('panClose').addEventListener('click',()=>panModal.classList.remove('open'));
+  panModal.addEventListener('click',e=>{ if(e.target===panModal) panModal.classList.remove('open'); });
 })();
 </script>
 </body>
