@@ -142,6 +142,9 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
 .hcard{position:relative}
 .hwarn{margin-top:6px;font-size:8.5px;font-weight:800;color:#a17d15;background:rgba(201,162,39,.14);border:1px solid rgba(201,162,39,.4);border-radius:20px;padding:2px 6px;cursor:help;white-space:nowrap}
 .hglobalwarn{margin-top:12px;font-size:11px;color:#a17d15;background:rgba(201,162,39,.08);border:1px solid rgba(201,162,39,.3);border-radius:10px;padding:9px 12px;line-height:1.5}
+.hcard.clicavel{cursor:pointer;transition:.15s}
+.hcard.clicavel:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 6px 14px rgba(201,162,39,.16)}
+.mesDetalheBox{margin-top:16px;padding-top:16px;border-top:2px solid var(--line)}
 .pdmonths{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:16px 26px 6px}
 .pmon{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center;position:relative}
 .pmon.parcial{border-style:dashed;border-color:#c9a227}
@@ -383,13 +386,18 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
     if(!hist){ box.innerHTML=''; return; }
     const porPessoa=(hist.porPessoa&&hist.porPessoa[nome])||{};
     const anomPessoa=(hist.anomalias&&hist.anomalias[nome])||{};
+    const semanasDoMes=hist.semanasDoMes||{};
+    const horasSemMes=(hist.horasSemanaisDoMes&&hist.horasSemanaisDoMes[nome])||{};
+    const mesesSemJul=hist.meses.filter(m=>m!==7); // julho já aparece no bloco de baixo, não repete aqui
     let temAnomalia=false;
-    const cards=hist.meses.map(m=>{
+    const cards=mesesSemJul.map(m=>{
       const mn=hist.nomesMeses[m];
       const du=hist.diasUteis[m];
       const devido=meta*du;
       const feito=porPessoa[m]!=null?porPessoa[m]:(porPessoa[String(m)]!=null?porPessoa[String(m)]:null);
       const anom=anomPessoa[m]||anomPessoa[String(m)];
+      const temSemanal=!!(semanasDoMes[m]||semanasDoMes[String(m)]);
+      const clicavel=feito!=null&&temSemanal;
       if(feito==null){
         return `<div class="hcard empty"><div class="hmn">${mn.slice(0,3)}</div><div class="hval">–</div><div class="hmeta">sem registro</div></div>`;
       }
@@ -404,8 +412,8 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
         }).join(', ');
         warnTag=`<div class="hwarn" title="Dia(s) com lançamento fisicamente impossível (mais de 16h no dia), provável erro no EasyJur: ${detalhe}">⚠ dado inconsistente</div>`;
       }
-      return `<div class="hcard ${cls}">
-        <div class="hmn">${mn.slice(0,3)}</div>
+      return `<div class="hcard ${cls}${clicavel?' clicavel':''}" ${clicavel?`data-mes="${m}"`:''}>
+        <div class="hmn">${mn.slice(0,3)}${clicavel?' ›':''}</div>
         <div class="hval">${Math.round(feito)}h</div>
         <div class="hmeta">meta ${du}×${meta}=${Math.round(devido)}h</div>
         <div class="hbar"><i style="width:${w}%"></i></div>
@@ -415,10 +423,87 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
     const avisoGeral = temAnomalia
       ? `<div class="hglobalwarn">⚠ Um ou mais meses têm dia(s) com mais de 16h registradas — lançamento incorreto no EasyJur, provavelmente. Passe o mouse no aviso do card pra ver o dia e o valor. Os totais do mês incluem esses valores (não foram corrigidos automaticamente).</div>`
       : '';
-    box.innerHTML=`<div class="ht">Histórico mensal · janeiro a julho</div>
-      <div class="hsub">Dias úteis do mês × meta (${meta}h/dia) vs. horas registradas. Meses sem barra ainda não foram tratados/lançados.</div>
+    box.innerHTML=`<div class="ht">Histórico mensal · janeiro a junho</div>
+      <div class="hsub">Dias úteis do mês × meta (${meta}h/dia) vs. horas registradas. Clique num mês com detalhe (›) para ver a evolução semanal dele. Meses sem barra ainda não foram tratados/lançados.</div>
       <div class="hrow">${cards}</div>
-      ${avisoGeral}`;
+      ${avisoGeral}
+      <div id="pd_mes_semanal"></div>`;
+
+    // clique no cardzinho clicável -> abre o detalhe semanal daquele mês
+    box.querySelectorAll('.hcard.clicavel').forEach(c=>{
+      c.addEventListener('click', ()=>renderDetalheMesSemanal(nome, meta, parseInt(c.dataset.mes,10)));
+    });
+  }
+
+  // detalhe semanal de UM mês do histórico (jan-jun) — mesma estética do gráfico jul-set
+  function renderDetalheMesSemanal(nome, meta, mes){
+    const hist=D.historico_mensal;
+    const sems=(hist.semanasDoMes[mes]||hist.semanasDoMes[String(mes)])||[];
+    const horas=(hist.horasSemanaisDoMes[nome]&&(hist.horasSemanaisDoMes[nome][mes]||hist.horasSemanaisDoMes[nome][String(mes)]))||[];
+    const mn=hist.nomesMeses[mes];
+    const semanas=sems.map((s,i)=>{
+      const feito=horas[i]||0;
+      const esperado=meta*s.du;
+      const pct=esperado>0? feito/esperado*100 : 0;
+      const cls=feito<=0?'zero':(pct>=97.5?'hit':'miss');
+      return {lab:s.label, feito, esperado, du:s.du, pct, cls};
+    });
+    const n=semanas.length;
+    const maxH=Math.max(...semanas.map(s=>Math.max(s.feito,s.esperado)),1)*1.18;
+    const W=920, H=300, padL=38, padR=22, padT=38, padB=32;
+    const innerW=W-padL-padR, innerH=H-padT-padB;
+    const xAt=i=> padL + (n<=1?innerW/2 : innerW*i/(n-1));
+    const yAt=h=> padT + innerH*(1 - h/maxH);
+    const step = maxH>50?10:5;
+    let grid='';
+    for(let g=0; g<=maxH; g+=step){
+      const y=yAt(g);
+      grid+=`<line x1="${padL}" y1="${y.toFixed(1)}" x2="${W-padR}" y2="${y.toFixed(1)}" stroke="#cdd7e0" stroke-width="1"/>`+
+            `<text x="${padL-8}" y="${(y+3).toFixed(1)}" text-anchor="end" font-size="11" font-weight="600" fill="#6f8aa0">${g}h</text>`;
+    }
+    const ptsFeito=semanas.map((s,i)=>`${xAt(i).toFixed(1)},${yAt(s.feito).toFixed(1)}`).join(' ');
+    const ptsMeta=semanas.map((s,i)=>`${xAt(i).toFixed(1)},${yAt(s.esperado).toFixed(1)}`).join(' ');
+    const dots=semanas.map((s,i)=>{
+      const col=s.cls==='hit'?'#2e9e6b':(s.cls==='miss'?'#d15757':'#c3cdd6');
+      return `<circle cx="${xAt(i).toFixed(1)}" cy="${yAt(s.feito).toFixed(1)}" r="5.5" fill="${col}" stroke="#fff" stroke-width="2"/>`;
+    }).join('');
+    const valLabels=semanas.map((s,i)=>{
+      const y=yAt(s.feito)-12;
+      const col=s.cls==='hit'?'#2e9e6b':(s.cls==='miss'?'#d15757':'#93a6b6');
+      return `<text x="${xAt(i).toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" font-size="12" font-weight="800" fill="${col}">${Math.round(s.feito)}h</text>`;
+    }).join('');
+    const xlabels=semanas.map((s,i)=>{
+      const ini=s.lab.split(' a ')[0];
+      return `<text x="${xAt(i).toFixed(1)}" y="${H-10}" text-anchor="middle" font-size="10.5" fill="#7a90a2" font-weight="600">${ini}</text>`;
+    }).join('');
+    const svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet" style="display:block">
+      ${grid}
+      <polyline points="${ptsMeta}" fill="none" stroke="#9fb3c4" stroke-width="2.5" stroke-dasharray="6 5"/>
+      <polyline points="${ptsFeito}" fill="none" stroke="#16324f" stroke-width="3"/>
+      ${dots}${valLabels}${xlabels}
+    </svg>`;
+    const lista=semanas.map(s=>{
+      const cor=s.cls==='hit'?'#2e9e6b':(s.cls==='miss'?'#d15757':'#93a6b6');
+      const txt=s.feito<=0
+        ? `não registrou · meta da semana ${Math.round(s.esperado)}h`
+        : `<b style="color:${cor}">${Math.round(s.feito)}h registradas</b> de ${Math.round(s.esperado)}h da meta da semana (${s.du} ${s.du===1?'dia':'dias'})`;
+      return `<div class="wkh2"><span class="wkl2">${s.lab}</span><span class="wkv2">${txt}</span></div>`;
+    }).join('');
+
+    document.getElementById('pd_mes_semanal').innerHTML = `
+      <div class="mesDetalheBox">
+        <div class="wt">Evolução semanal · ${mn}</div>
+        <div class="wtsub">Linha escura = horas que a pessoa registrou · linha tracejada cinza = a meta daquela semana (${meta}h/dia × dias úteis). Semanas cortadas na abertura/fechamento do mês.</div>
+        <div class="linechart">${svg}</div>
+        <div class="wklegend">
+          <span><i style="background:#16324f;border-radius:2px"></i> registrou</span>
+          <span><i style="background:#9fb3c4;border-radius:2px"></i> meta da semana</span>
+          <span><i style="background:#2e9e6b"></i> bateu</span>
+          <span><i style="background:#d15757"></i> abaixo</span>
+        </div>
+        <div class="wklist">${lista}</div>
+      </div>`;
+    document.getElementById('pd_mes_semanal').scrollIntoView({behavior:'smooth', block:'nearest'});
   }
 
   // clique numa PESSOA -> modal resumo semana a semana
