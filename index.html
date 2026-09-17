@@ -421,7 +421,7 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
       </div>`;
     }).join('');
     const avisoGeral = temAnomalia
-      ? `<div class="hglobalwarn">⚠ Um ou mais meses têm dia(s) com mais de 16h registradas — lançamento incorreto no EasyJur, provavelmente. Passe o mouse no aviso do card pra ver o dia e o valor. Os totais do mês incluem esses valores (não foram corrigidos automaticamente).</div>`
+      ? `<div class="hglobalwarn">⚠ No período entre janeiro e junho, um ou mais meses têm dia(s) com mais de 16h registradas: lançamentos incorretos ou mal registrados no EasyJur, provavelmente. Passe o mouse no aviso do card pra ver o dia e o valor. Os totais dos meses incluem esses valores, que não foram corrigidos nem auditados, porque esse período ainda não era acompanhado de perto. A partir de julho, quando o timesheet passou a ser ajustado e acompanhado, esse tipo de inconsistência cai bastante.</div>`
       : '';
     box.innerHTML=`<div class="ht">Histórico mensal · janeiro a junho</div>
       <div class="hsub">Dias úteis do mês × meta (${meta}h/dia) vs. horas registradas. Clique num mês com detalhe (›) para ver a evolução semanal dele. Meses sem barra ainda não foram tratados/lançados.</div>
