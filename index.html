@@ -139,6 +139,9 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
 .hcard.hit .hbar i{background:#2e9e6b}
 .hcard.miss .hbar i{background:#d15757}
 .hcard.empty .hval{color:var(--ink3);font-size:13px}
+.hcard{position:relative}
+.hwarn{margin-top:6px;font-size:8.5px;font-weight:800;color:#a17d15;background:rgba(201,162,39,.14);border:1px solid rgba(201,162,39,.4);border-radius:20px;padding:2px 6px;cursor:help;white-space:nowrap}
+.hglobalwarn{margin-top:12px;font-size:11px;color:#a17d15;background:rgba(201,162,39,.08);border:1px solid rgba(201,162,39,.3);border-radius:10px;padding:9px 12px;line-height:1.5}
 .pdmonths{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:16px 26px 6px}
 .pmon{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center;position:relative}
 .pmon.parcial{border-style:dashed;border-color:#c9a227}
@@ -379,27 +382,43 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
     const box=document.getElementById('pd_hist');
     if(!hist){ box.innerHTML=''; return; }
     const porPessoa=(hist.porPessoa&&hist.porPessoa[nome])||{};
+    const anomPessoa=(hist.anomalias&&hist.anomalias[nome])||{};
+    let temAnomalia=false;
     const cards=hist.meses.map(m=>{
       const mn=hist.nomesMeses[m];
       const du=hist.diasUteis[m];
       const devido=meta*du;
       const feito=porPessoa[m]!=null?porPessoa[m]:(porPessoa[String(m)]!=null?porPessoa[String(m)]:null);
+      const anom=anomPessoa[m]||anomPessoa[String(m)];
       if(feito==null){
         return `<div class="hcard empty"><div class="hmn">${mn.slice(0,3)}</div><div class="hval">–</div><div class="hmeta">sem registro</div></div>`;
       }
       const pct=devido>0?feito/devido*100:0;
       const cls=pct>=97.5?'hit':'miss';
       const w=Math.max(4,Math.min(pct,150)/150*100);
+      let warnTag='';
+      if(anom&&anom.length){
+        temAnomalia=true;
+        const detalhe=anom.map(([dt,h])=>{
+          const dd=dt.split('-'); return `${dd[2]}/${dd[1]}: ${h}h`;
+        }).join(', ');
+        warnTag=`<div class="hwarn" title="Dia(s) com lançamento fisicamente impossível (mais de 16h no dia), provável erro no EasyJur: ${detalhe}">⚠ dado inconsistente</div>`;
+      }
       return `<div class="hcard ${cls}">
         <div class="hmn">${mn.slice(0,3)}</div>
         <div class="hval">${Math.round(feito)}h</div>
         <div class="hmeta">meta ${du}×${meta}=${Math.round(devido)}h</div>
         <div class="hbar"><i style="width:${w}%"></i></div>
+        ${warnTag}
       </div>`;
     }).join('');
+    const avisoGeral = temAnomalia
+      ? `<div class="hglobalwarn">⚠ Um ou mais meses têm dia(s) com mais de 16h registradas — lançamento incorreto no EasyJur, provavelmente. Passe o mouse no aviso do card pra ver o dia e o valor. Os totais do mês incluem esses valores (não foram corrigidos automaticamente).</div>`
+      : '';
     box.innerHTML=`<div class="ht">Histórico mensal · janeiro a julho</div>
       <div class="hsub">Dias úteis do mês × meta (${meta}h/dia) vs. horas registradas. Meses sem barra ainda não foram tratados/lançados.</div>
-      <div class="hrow">${cards}</div>`;
+      <div class="hrow">${cards}</div>
+      ${avisoGeral}`;
   }
 
   // clique numa PESSOA -> modal resumo semana a semana
