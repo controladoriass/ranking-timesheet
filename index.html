@@ -122,6 +122,23 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
 .pdhead .psub2{font-size:12px;color:var(--ink3);margin-top:4px;font-weight:500}
 .pdhead .pclose{background:var(--bg);border:1px solid var(--line);width:34px;height:34px;border-radius:10px;cursor:pointer;font-size:18px;color:var(--ink2);flex:0 0 auto}
 .pdhead .pclose:hover{color:var(--navy);border-color:var(--gold)}
+/* histórico mensal jan-jul (cardzinhos enfileirados) */
+.pdhist{padding:18px 26px 4px}
+.pdhist .ht{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);font-weight:700;margin-bottom:4px}
+.pdhist .hsub{font-size:11px;color:var(--ink3);margin-bottom:12px}
+.hrow{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px}
+.hcard{flex:0 0 auto;min-width:112px;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:11px;text-align:center}
+.hcard.empty{opacity:.4;border-style:dashed}
+.hcard .hmn{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);font-weight:700}
+.hcard .hval{font-size:18px;font-weight:900;color:var(--navy);margin-top:4px;font-variant-numeric:tabular-nums}
+.hcard.hit .hval{color:#2e9e6b}
+.hcard.miss .hval{color:#d15757}
+.hcard .hmeta{font-size:9.5px;color:var(--ink3);margin-top:3px;line-height:1.3}
+.hcard .hbar{height:5px;background:var(--bg2);border-radius:4px;margin-top:7px;overflow:hidden}
+.hcard .hbar i{display:block;height:100%;border-radius:4px}
+.hcard.hit .hbar i{background:#2e9e6b}
+.hcard.miss .hbar i{background:#d15757}
+.hcard.empty .hval{color:var(--ink3);font-size:13px}
 .pdmonths{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:16px 26px 6px}
 .pmon{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center;position:relative}
 .pmon.parcial{border-style:dashed;border-color:#c9a227}
@@ -193,6 +210,7 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
       </div>
       <button class="pclose" id="pd_close">✕</button>
     </div>
+    <div class="pdhist" id="pd_hist"></div>
     <div class="pdmonths" id="pd_months"></div>
     <div class="pdweeks" id="pd_weeks"></div>
   </div>
@@ -355,6 +373,35 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
     r.addEventListener('click',()=>go(parseInt(r.dataset.idx,10)));
   });
 
+  // histórico mensal jan-jul (cardzinhos enfileirados) — dados em D.historico_mensal
+  function renderHistoricoMensal(nome, meta){
+    const hist=D.historico_mensal;
+    const box=document.getElementById('pd_hist');
+    if(!hist){ box.innerHTML=''; return; }
+    const porPessoa=(hist.porPessoa&&hist.porPessoa[nome])||{};
+    const cards=hist.meses.map(m=>{
+      const mn=hist.nomesMeses[m];
+      const du=hist.diasUteis[m];
+      const devido=meta*du;
+      const feito=porPessoa[m]!=null?porPessoa[m]:(porPessoa[String(m)]!=null?porPessoa[String(m)]:null);
+      if(feito==null){
+        return `<div class="hcard empty"><div class="hmn">${mn.slice(0,3)}</div><div class="hval">–</div><div class="hmeta">sem registro</div></div>`;
+      }
+      const pct=devido>0?feito/devido*100:0;
+      const cls=pct>=97.5?'hit':'miss';
+      const w=Math.max(4,Math.min(pct,150)/150*100);
+      return `<div class="hcard ${cls}">
+        <div class="hmn">${mn.slice(0,3)}</div>
+        <div class="hval">${Math.round(feito)}h</div>
+        <div class="hmeta">meta ${du}×${meta}=${Math.round(devido)}h</div>
+        <div class="hbar"><i style="width:${w}%"></i></div>
+      </div>`;
+    }).join('');
+    box.innerHTML=`<div class="ht">Histórico mensal · janeiro a julho</div>
+      <div class="hsub">Dias úteis do mês × meta (${meta}h/dia) vs. horas registradas. Meses sem barra ainda não foram tratados/lançados.</div>
+      <div class="hrow">${cards}</div>`;
+  }
+
   // clique numa PESSOA -> modal resumo semana a semana
   const modal=document.getElementById('pdetail');
   function openPerson(nome){
@@ -365,6 +412,7 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
     const meta=v.meta;
     document.getElementById('pd_name').textContent=nome;
     document.getElementById('pd_sub').textContent=`${v.area} · ${v.cargo||''} · meta ${meta}h/dia`;
+    renderHistoricoMensal(nome, meta);
     // meses: horas registradas em destaque + meta CHEIA do mês (dias úteis do mês inteiro × h/dia)
     // setembro usa 21 dias úteis (mês inteiro, feriado 07/09 descontado); a tag "parcial" avisa que o registrado ainda não fechou
     const DU_MES_CHEIO={Julho:23, Agosto:21, Setembro:21};
