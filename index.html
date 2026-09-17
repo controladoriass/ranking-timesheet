@@ -280,9 +280,18 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
   </div>
 </div>
 
-<script src="dados.js"></script>
 <script>
+// carrega dados.js sempre fresco (cache-busting), depois inicia o painel
 (function(){
+  var s=document.createElement('script');
+  s.src='dados.js?v='+Date.now();
+  s.onload=function(){ if(window.__initPainel) window.__initPainel(); };
+  s.onerror=function(){ document.body.insertAdjacentHTML('beforeend','<div style="padding:20px;color:#c0413f;font-family:sans-serif">Erro ao carregar os dados. Recarregue a página.</div>'); };
+  document.head.appendChild(s);
+})();
+</script>
+<script>
+window.__initPainel = function(){
   const D = window.TIMESHEET_DATA;
   const MESES3 = ['Julho','Agosto','Setembro'];
   const DU = D.dias_uteis || {Julho:23,Agosto:21,Setembro:8};
@@ -706,7 +715,7 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
   document.getElementById('evoBtn').addEventListener('click',()=>{ renderPanorama(); panModal.classList.add('open'); });
   document.getElementById('panClose').addEventListener('click',()=>panModal.classList.remove('open'));
   panModal.addEventListener('click',e=>{ if(e.target===panModal) panModal.classList.remove('open'); });
-})();
+};
 </script>
 </body>
 </html>
