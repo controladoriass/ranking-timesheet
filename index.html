@@ -296,6 +296,10 @@ window.__initPainel = function(){
   const MESES3 = ['Julho','Agosto','Setembro'];
   const DU = D.dias_uteis || {Julho:23,Agosto:21,Setembro:8};
   const fmtPct = v => Math.round(v)+'%';
+  // data de corte e nº de períodos dinâmicos (avançam com a automação)
+  const N_PERIODOS = (D.semanas && D.semanas.labels ? D.semanas.labels.length : 10);
+  let DATA_CORTE = '13/09';
+  try{ const ult=(D.semanas.labels||[]).slice(-1)[0]||''; const mm=ult.match(/a (\d{2}\/\d{2})/); if(mm) DATA_CORTE=mm[1]; }catch(e){}
   // desempenho do período = soma horas feitas / soma horas devidas (meta/dia × dias úteis do mês)
   function devidoDe(meta){ return meta*(DU.Julho+DU.Agosto+DU.Setembro); }
   function feitoDe(horas){ return horas.Julho+horas.Agosto+horas.Setembro; }
@@ -384,7 +388,7 @@ window.__initPainel = function(){
       <div class="card-h"><div class="htext">
         <div class="eyebrow">Card principal · por setor</div>
         <h2>Setores que mais se mantiveram batendo a meta</h2>
-        <div class="desc">Ranking pela média de períodos em que cada pessoa do setor bateu a meta de horas (dos 10 períodos, de julho até 13/09). Meta por função: advogado/financeiro 7h/dia · estagiário 5h/dia.</div>
+        <div class="desc">Ranking pela média de períodos em que cada pessoa do setor bateu a meta de horas (dos ${N_PERIODOS} períodos, de julho até ${DATA_CORTE}). Meta por função: advogado/financeiro 7h/dia · estagiário 5h/dia.</div>
       </div></div>
       <div class="card-b"><div class="slist">${rows}</div></div>
     </div>`;
@@ -406,7 +410,7 @@ window.__initPainel = function(){
         <div class="htext">
           <div class="eyebrow">Setor</div>
           <h2>${area}</h2>
-          <div class="desc">${s.n} pessoa(s) · ordenado por quem mais bateu a meta nos ${s10} períodos, de julho até setembro (data de corte 13/09), conforme a meta de cada função (advogado/financeiro 7h/dia · estagiário 5h/dia)</div>
+          <div class="desc">${s.n} pessoa(s) · ordenado por quem mais bateu a meta nos ${s10} períodos, de julho até setembro (data de corte ${DATA_CORTE}), conforme a meta de cada função (advogado/financeiro 7h/dia · estagiário 5h/dia)</div>
         </div>
       </div>
       <div class="card-b">${rows}</div>
@@ -592,7 +596,7 @@ window.__initPainel = function(){
       return `<div class="pmon${parcial?' parcial':''}"><div class="mn">${mn}</div>
         <div class="mp" style="color:#2e9e6b">${Math.round(h)}h <span class="mpl">registradas</span></div>
         <div class="mh">meta: ${du} dias úteis × ${meta} horas = <b>${Math.round(deveria)}h</b></div>
-        ${parcial?'<div class="ptag">parcial · só até 13/09</div>':''}</div>`;
+        ${parcial?`<div class="ptag">parcial · só até ${DATA_CORTE}</div>`:''}</div>`;
     }).join('');
 
     // === GRÁFICO DE LINHA SEMANAL (horas registradas vs linha da meta) ===
@@ -652,7 +656,7 @@ window.__initPainel = function(){
 
     document.getElementById('pd_weeks').innerHTML=`
       <div class="wt">Evolução semana a semana · horas registradas</div>
-      <div class="wtsub">Linha escura = horas que a pessoa registrou · linha tracejada cinza = a meta daquela semana (${meta}h/dia × dias úteis). Ponto verde = bateu a meta, vermelho = ficou abaixo. (* setembro parcial, até 13/09)</div>
+      <div class="wtsub">Linha escura = horas que a pessoa registrou · linha tracejada cinza = a meta daquela semana (${meta}h/dia × dias úteis). Ponto verde = bateu a meta, vermelho = ficou abaixo. (* setembro parcial, até ${DATA_CORTE})</div>
       <div class="linechart">${svg}</div>
       <div class="wklegend">
         <span><i style="background:#16324f;border-radius:2px"></i> registrou</span>
