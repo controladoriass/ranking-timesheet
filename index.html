@@ -145,6 +145,10 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
 .hcard.clicavel{cursor:pointer;transition:.15s}
 .hcard.clicavel:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 6px 14px rgba(201,162,39,.16)}
 .mesDetalheBox{margin-top:16px;padding-top:16px;border-top:2px solid var(--line)}
+.mesDetalheHead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:4px}
+.mesFechar{background:var(--bg);border:1px solid var(--line);color:var(--ink2);font-family:'Montserrat',sans-serif;font-weight:700;font-size:11px;padding:6px 12px;border-radius:20px;cursor:pointer;white-space:nowrap;transition:.15s}
+.mesFechar:hover{border-color:var(--gold);color:var(--navy)}
+.hcard.sel{border-color:var(--gold);box-shadow:0 0 0 2px rgba(201,162,39,.3);background:rgba(201,162,39,.05)}
 .pdmonths{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:16px 26px 6px}
 .pmon{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center;position:relative}
 .pmon.parcial{border-style:dashed;border-color:#c9a227}
@@ -563,7 +567,10 @@ window.__initPainel = function(){
 
     document.getElementById('pd_mes_semanal').innerHTML = `
       <div class="mesDetalheBox">
-        <div class="wt">Evolução semanal · ${mn}</div>
+        <div class="mesDetalheHead">
+          <div class="wt">Evolução semanal · ${mn}</div>
+          <button class="mesFechar" id="mesFecharBtn">✕ fechar ${mn}</button>
+        </div>
         <div class="wtsub">Linha escura = horas que a pessoa registrou · linha tracejada cinza = a meta daquela semana (${meta}h/dia × dias úteis). Semanas cortadas na abertura/fechamento do mês.</div>
         <div class="linechart">${svg}</div>
         <div class="wklegend">
@@ -574,6 +581,15 @@ window.__initPainel = function(){
         </div>
         <div class="wklist">${lista}</div>
       </div>`;
+    // marcar o card do mês como selecionado
+    document.querySelectorAll('#pd_hist .hcard').forEach(c=>c.classList.remove('sel'));
+    const cardSel=[...document.querySelectorAll('#pd_hist .hcard.clicavel')].find(c=>parseInt(c.dataset.mes,10)===mes);
+    if(cardSel) cardSel.classList.add('sel');
+    // botão fechar: limpa o detalhe e volta ao normal (só cardzinhos + jul-set)
+    document.getElementById('mesFecharBtn').addEventListener('click',()=>{
+      document.getElementById('pd_mes_semanal').innerHTML='';
+      document.querySelectorAll('#pd_hist .hcard').forEach(c=>c.classList.remove('sel'));
+    });
     document.getElementById('pd_mes_semanal').scrollIntoView({behavior:'smooth', block:'nearest'});
   }
 
