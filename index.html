@@ -251,7 +251,7 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
       <div class="panHead">
         <div>
           <h2>Evolução: antes e depois do acompanhamento</h2>
-          <div class="psub">Compara o desempenho médio de janeiro a junho, período sem acompanhamento, contra julho a setembro, período já acompanhado e ajustado. Considera só quem tem registro nos dois períodos, excluindo quem entrou no meio do caminho.</div>
+          <div class="psub" id="panSub">Compara o desempenho médio de janeiro a junho, período sem acompanhamento, contra julho a setembro, período já acompanhado e ajustado. Considera só quem tem registro nos dois períodos, excluindo quem entrou no meio do caminho.</div>
         </div>
         <button class="panClose" id="panClose">✕</button>
       </div>
@@ -304,7 +304,19 @@ window.__initPainel = function(){
   // data de corte e nº de períodos dinâmicos (avançam com a automação)
   const N_PERIODOS = (D.semanas && D.semanas.labels ? D.semanas.labels.length : 10);
   let DATA_CORTE = '13/09';
-  try{ const ult=(D.semanas.labels||[]).slice(-1)[0]||''; const mm=ult.match(/a (\d{2}\/\d{2})/); if(mm) DATA_CORTE=mm[1]; }catch(e){}
+  let MES_VIG_NOME = 'setembro'; // nome do mês vigente por extenso (minúsculo), dinâmico
+  try{
+    const ult=(D.semanas.labels||[]).slice(-1)[0]||'';
+    const mm=ult.match(/a (\d{2})\/(\d{2})/);
+    if(mm){ DATA_CORTE=mm[1]+'/'+mm[2];
+      const nomes=['','janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+      MES_VIG_NOME = nomes[parseInt(mm[2],10)] || MES_VIG_NOME;
+    }
+  }catch(e){}
+  // período acompanhado, por extenso e dinâmico (ex: "julho a outubro"); se o vigente for julho, só "julho"
+  const PERIODO_ACOMP = (MES_VIG_NOME==='julho') ? 'julho' : ('julho a '+MES_VIG_NOME);
+  // atualiza o subtítulo do card "Ver evolução" com o período dinâmico
+  try{ const ps=document.getElementById('panSub'); if(ps) ps.textContent=`Compara o desempenho médio de janeiro a junho, período sem acompanhamento, contra ${PERIODO_ACOMP}, período já acompanhado e ajustado. Considera só quem tem registro nos dois períodos, excluindo quem entrou no meio do caminho.`; }catch(e){}
   // desempenho do período = soma horas feitas / soma horas devidas (meta/dia × dias úteis do mês)
   function devidoDe(meta){ return meta*(DU.Julho+DU.Agosto+DU.Setembro); }
   function feitoDe(horas){ return horas.Julho+horas.Agosto+horas.Setembro; }
@@ -446,7 +458,7 @@ window.__initPainel = function(){
         <div class="htext">
           <div class="eyebrow">Setor</div>
           <h2>${area}</h2>
-          <div class="desc">${s.n} pessoa(s) · ordenado por quem mais bateu a meta nos ${s10} períodos, de julho até setembro (data de corte ${DATA_CORTE}), conforme a meta de cada função (advogado/financeiro 7h/dia · estagiário 5h/dia)</div>
+          <div class="desc">${s.n} pessoa(s) · ordenado por quem mais bateu a meta nos ${s10} períodos, de ${PERIODO_ACOMP} (data de corte ${DATA_CORTE}), conforme a meta de cada função (advogado/financeiro 7h/dia · estagiário 5h/dia)</div>
         </div>
       </div>
       <div class="card-b">${rows}</div>
@@ -717,7 +729,7 @@ window.__initPainel = function(){
       </div>
       <div class="panBig">
         <div class="pbv">${pan.mediaAntes.toFixed(0)}% → ${pan.mediaDepois.toFixed(0)}%</div>
-        <div class="pbl">Média geral do escritório: de <b>${pan.mediaAntes.toFixed(1)}%</b> da meta em janeiro a junho para <b>${pan.mediaDepois.toFixed(1)}%</b> em julho a setembro, uma evolução de <b>+${pan.variacaoGeral.toFixed(1)} pontos</b>.</div>
+        <div class="pbl">Média geral do escritório: de <b>${pan.mediaAntes.toFixed(1)}%</b> da meta em janeiro a junho para <b>${pan.mediaDepois.toFixed(1)}%</b> em ${PERIODO_ACOMP}, uma evolução de <b>+${pan.variacaoGeral.toFixed(1)} pontos</b>.</div>
       </div>
       <div class="panCols">
         <div>
