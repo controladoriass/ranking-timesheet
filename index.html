@@ -149,6 +149,9 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
 .mesFechar{background:var(--bg);border:1px solid var(--line);color:var(--ink2);font-family:'Montserrat',sans-serif;font-weight:700;font-size:11px;padding:6px 12px;border-radius:20px;cursor:pointer;white-space:nowrap;transition:.15s}
 .mesFechar:hover{border-color:var(--gold);color:var(--navy)}
 .hcard.sel{border-color:var(--gold);box-shadow:0 0 0 2px rgba(201,162,39,.3);background:rgba(201,162,39,.05)}
+.hcard.parcial{border-style:dashed}
+.hparcial{margin-top:5px;font-size:8px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;color:#a17d15;background:rgba(201,162,39,.12);border-radius:20px;padding:2px 6px;display:inline-block;white-space:nowrap}
+.mesParcialTag{font-size:11px;font-weight:700;color:#a17d15;text-transform:none;letter-spacing:0}
 .pdmonths{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:16px 26px 6px}
 .pmon{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center;position:relative}
 .pmon.parcial{border-style:dashed;border-color:#c9a227}
@@ -279,8 +282,6 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
       <button class="pclose" id="pd_close">✕</button>
     </div>
     <div class="pdhist" id="pd_hist"></div>
-    <div class="pdmonths" id="pd_months"></div>
-    <div class="pdweeks" id="pd_weeks"></div>
   </div>
 </div>
 
@@ -308,6 +309,37 @@ window.__initPainel = function(){
   function devidoDe(meta){ return meta*(DU.Julho+DU.Agosto+DU.Setembro); }
   function feitoDe(horas){ return horas.Julho+horas.Agosto+horas.Setembro; }
   function pctPeriodo(horas, meta){ const d=devidoDe(meta); return d>0? feitoDe(horas)/d*100 : 0; }
+
+  // === meses do bloco acompanhado (jul em diante): fatia o array contínuo `semanas` por mês real ===
+  // Cada semana tem rótulo "dd/mm a dd/mm"; o mês da semana é o mês do FIM dela (onde cai a maioria dos dias).
+  const NOME_MES_NUM={1:'Janeiro',2:'Fevereiro',3:'Março',4:'Abril',5:'Maio',6:'Junho',
+                      7:'Julho',8:'Agosto',9:'Setembro',10:'Outubro',11:'Novembro',12:'Dezembro'};
+  function mesesAcompanhados(){
+    // retorna [{mes, nome, semIdx:[indices no array semanas]}] na ordem cronológica.
+    // Semana-ponte (início num mês, fim em outro) entra nos DOIS meses que toca,
+    // porque o trabalho dela conta pros dois.
+    const labels=(D.semanas&&D.semanas.labels)||[];
+    const ordem=[]; const porMes={};
+    function add(mes,i){
+      if(!porMes[mes]){ porMes[mes]={mes, nome:NOME_MES_NUM[mes], semIdx:[]}; ordem.push(porMes[mes]); }
+      if(!porMes[mes].semIdx.includes(i)) porMes[mes].semIdx.push(i);
+    }
+    labels.forEach((lab,i)=>{
+      const mi=lab.match(/^(\d{2})\/(\d{2})/);   // início da semana
+      const mf=lab.match(/a (\d{2})\/(\d{2})/);  // fim da semana
+      if(mi) add(parseInt(mi[2],10), i);
+      if(mf) add(parseInt(mf[2],10), i);
+    });
+    ordem.sort((a,b)=>a.mes-b.mes);
+    return ordem;
+  }
+  // mês vigente = o maior mês coberto (do fim do último rótulo)
+  function mesVigente(){
+    const labels=(D.semanas&&D.semanas.labels)||[];
+    if(!labels.length) return null;
+    const mf=labels[labels.length-1].match(/a (\d{2})\/(\d{2})/);
+    return mf? parseInt(mf[2],10) : null;
+  }
 
   // status pela régua (% já é sobre a meta individual, cortes iguais p/ todos)
   function statusOf(p){
@@ -454,51 +486,73 @@ window.__initPainel = function(){
     r.addEventListener('click',()=>go(parseInt(r.dataset.idx,10)));
   });
 
-  // histórico mensal jan-jul (cardzinhos enfileirados) — dados em D.historico_mensal
+  // histórico mensal COMPLETO (jan a mês vigente) — cardzinhos enfileirados, todos clicáveis.
+  // jan-jun vêm de D.historico_mensal; jul em diante vêm do bloco semanal (fatiado por mês).
   function renderHistoricoMensal(nome, meta){
     const hist=D.historico_mensal;
     const box=document.getElementById('pd_hist');
-    if(!hist){ box.innerHTML=''; return; }
-    const porPessoa=(hist.porPessoa&&hist.porPessoa[nome])||{};
-    const anomPessoa=(hist.anomalias&&hist.anomalias[nome])||{};
-    const semanasDoMes=hist.semanasDoMes||{};
-    const horasSemMes=(hist.horasSemanaisDoMes&&hist.horasSemanaisDoMes[nome])||{};
-    const mesesSemJul=hist.meses.filter(m=>m!==7); // julho já aparece no bloco de baixo, não repete aqui
+    const v=D.colaboradores[nome]||{horas:{}};
+    const porPessoa=(hist&&hist.porPessoa&&hist.porPessoa[nome])||{};
+    const anomPessoa=(hist&&hist.anomalias&&hist.anomalias[nome])||{};
+    const vig=mesVigente();
+    // horas semanais do bloco acompanhado desta pessoa
+    const horasSem=(D.semanas.horas&&D.semanas.horas[nome])||[];
+    const duSem=D.semanas.dias_uteis||[];
+    const mesesAcomp=mesesAcompanhados();              // [{mes,nome,semIdx}]
+    const mesesAcompNum=mesesAcomp.map(x=>x.mes);
+    const infoAcomp={}; mesesAcomp.forEach(x=>infoAcomp[x.mes]=x);
+
     let temAnomalia=false;
-    const cards=mesesSemJul.map(m=>{
-      const mn=hist.nomesMeses[m];
-      const du=hist.diasUteis[m];
-      const devido=meta*du;
-      const feito=porPessoa[m]!=null?porPessoa[m]:(porPessoa[String(m)]!=null?porPessoa[String(m)]:null);
-      const anom=anomPessoa[m]||anomPessoa[String(m)];
-      const temSemanal=!!(semanasDoMes[m]||semanasDoMes[String(m)]);
-      const clicavel=feito!=null&&temSemanal;
+    // monta os cards de mes 1..12 que tenham dado (jan-jun do historico, jul+ do bloco semanal)
+    const mesesJanJun=(hist&&hist.meses?hist.meses:[]).filter(m=>m<=6);
+    const todosMeses=[...new Set([...mesesJanJun, ...mesesAcompNum])].sort((a,b)=>a-b);
+
+    const cards=todosMeses.map(m=>{
+      const mn=NOME_MES_NUM[m];
+      const ehAcomp=mesesAcompNum.includes(m);
+      let du, feito, anom=null, clicavel=false, parcial=false;
+      if(ehAcomp){
+        // mês do bloco acompanhado (jul+): usa o total MENSAL correto (por dia real, do motor),
+        // NÃO a soma das semanas (que misturaria dias de meses vizinhos quando a semana cruza o mês).
+        const mnNome=NOME_MES_NUM[m];
+        du=(DU[mnNome]!=null)?DU[mnNome]:infoAcomp[m].semIdx.reduce((s,i)=>s+(duSem[i]||0),0);
+        feito=(v.horas&&v.horas[mnNome]!=null)?v.horas[mnNome]:infoAcomp[m].semIdx.reduce((s,i)=>s+(horasSem[i]||0),0);
+        clicavel=true;                 // sempre tem detalhe semanal
+        parcial=(m===vig);             // mês vigente é parcial
+      }else{
+        // mês jan-jun do histórico
+        du=hist.diasUteis[m];
+        feito=porPessoa[m]!=null?porPessoa[m]:(porPessoa[String(m)]!=null?porPessoa[String(m)]:null);
+        anom=anomPessoa[m]||anomPessoa[String(m)];
+        const temSemanal=!!((hist.semanasDoMes&&(hist.semanasDoMes[m]||hist.semanasDoMes[String(m)])));
+        clicavel=feito!=null&&temSemanal;
+      }
       if(feito==null){
         return `<div class="hcard empty"><div class="hmn">${mn.slice(0,3)}</div><div class="hval">–</div><div class="hmeta">sem registro</div></div>`;
       }
+      const devido=meta*du;
       const pct=devido>0?feito/devido*100:0;
       const cls=pct>=97.5?'hit':'miss';
       const w=Math.max(4,Math.min(pct,150)/150*100);
       let warnTag='';
       if(anom&&anom.length){
         temAnomalia=true;
-        const detalhe=anom.map(([dt,h])=>{
-          const dd=dt.split('-'); return `${dd[2]}/${dd[1]}: ${h}h`;
-        }).join(', ');
+        const detalhe=anom.map(([dt,h])=>{ const dd=dt.split('-'); return `${dd[2]}/${dd[1]}: ${h}h`; }).join(', ');
         warnTag=`<div class="hwarn" title="Dia(s) com lançamento fisicamente impossível (mais de 16h no dia), provável erro no EasyJur: ${detalhe}">⚠ dado inconsistente</div>`;
       }
-      return `<div class="hcard ${cls}${clicavel?' clicavel':''}" ${clicavel?`data-mes="${m}"`:''}>
+      return `<div class="hcard ${cls}${clicavel?' clicavel':''}${parcial?' parcial':''}" ${clicavel?`data-mes="${m}"`:''}>
         <div class="hmn">${mn.slice(0,3)}${clicavel?' ›':''}</div>
         <div class="hval">${Math.round(feito)}h</div>
         <div class="hmeta">meta ${du}×${meta}=${Math.round(devido)}h</div>
         <div class="hbar"><i style="width:${w}%"></i></div>
+        ${parcial?`<div class="hparcial">parcial · até ${DATA_CORTE}</div>`:''}
         ${warnTag}
       </div>`;
     }).join('');
     const avisoGeral = temAnomalia
       ? `<div class="hglobalwarn">⚠ No período entre janeiro e junho, um ou mais meses têm dia(s) com mais de 16h registradas: lançamentos incorretos ou mal registrados no EasyJur, provavelmente. Passe o mouse no aviso do card pra ver o dia e o valor. Os totais dos meses incluem esses valores, que não foram corrigidos nem auditados, porque esse período ainda não era acompanhado de perto. A partir de julho, quando o timesheet passou a ser ajustado e acompanhado, esse tipo de inconsistência cai bastante.</div>`
       : '';
-    box.innerHTML=`<div class="ht">Histórico mensal · janeiro a junho</div>
+    box.innerHTML=`<div class="ht">Histórico mensal</div>
       <div class="hsub">Dias úteis do mês × meta (${meta}h/dia) vs. horas registradas. Clique num mês com detalhe (›) para ver a evolução semanal dele. Meses sem barra ainda não foram tratados/lançados.</div>
       <div class="hrow">${cards}</div>
       ${avisoGeral}
@@ -508,21 +562,40 @@ window.__initPainel = function(){
     box.querySelectorAll('.hcard.clicavel').forEach(c=>{
       c.addEventListener('click', ()=>renderDetalheMesSemanal(nome, meta, parseInt(c.dataset.mes,10)));
     });
+    // mês vigente abre automaticamente
+    if(vig!=null){ renderDetalheMesSemanal(nome, meta, vig); }
   }
 
-  // detalhe semanal de UM mês do histórico (jan-jun) — mesma estética do gráfico jul-set
+  // detalhe semanal de UM mês — funciona para jan-jun (histórico) E jul+ (bloco semanal)
   function renderDetalheMesSemanal(nome, meta, mes){
     const hist=D.historico_mensal;
-    const sems=(hist.semanasDoMes[mes]||hist.semanasDoMes[String(mes)])||[];
-    const horas=(hist.horasSemanaisDoMes[nome]&&(hist.horasSemanaisDoMes[nome][mes]||hist.horasSemanaisDoMes[nome][String(mes)]))||[];
-    const mn=hist.nomesMeses[mes];
-    const semanas=sems.map((s,i)=>{
-      const feito=horas[i]||0;
-      const esperado=meta*s.du;
-      const pct=esperado>0? feito/esperado*100 : 0;
-      const cls=feito<=0?'zero':(pct>=97.5?'hit':'miss');
-      return {lab:s.label, feito, esperado, du:s.du, pct, cls};
-    });
+    const mn=NOME_MES_NUM[mes];
+    const infoAcomp={}; mesesAcompanhados().forEach(x=>infoAcomp[x.mes]=x);
+    let semanas;
+    if(infoAcomp[mes]){
+      // mês do bloco acompanhado (jul+): fatia o array `semanas` pelas semanas daquele mês
+      const idx=infoAcomp[mes].semIdx;
+      const labels=D.semanas.labels||[];
+      const duSem=D.semanas.dias_uteis||[];
+      const horasSem=(D.semanas.horas&&D.semanas.horas[nome])||[];
+      semanas=idx.map(i=>{
+        const feito=horasSem[i]||0, du=duSem[i]||0, esperado=meta*du;
+        const pct=esperado>0? feito/esperado*100 : 0;
+        const cls=feito<=0?'zero':(pct>=97.5?'hit':'miss');
+        return {lab:labels[i], feito, esperado, du, pct, cls};
+      });
+    }else{
+      // mês jan-jun do histórico
+      const sems=(hist.semanasDoMes[mes]||hist.semanasDoMes[String(mes)])||[];
+      const horas=(hist.horasSemanaisDoMes[nome]&&(hist.horasSemanaisDoMes[nome][mes]||hist.horasSemanaisDoMes[nome][String(mes)]))||[];
+      semanas=sems.map((s,i)=>{
+        const feito=horas[i]||0;
+        const esperado=meta*s.du;
+        const pct=esperado>0? feito/esperado*100 : 0;
+        const cls=feito<=0?'zero':(pct>=97.5?'hit':'miss');
+        return {lab:s.label, feito, esperado, du:s.du, pct, cls};
+      });
+    }
     const n=semanas.length;
     const maxH=Math.max(...semanas.map(s=>Math.max(s.feito,s.esperado)),1)*1.18;
     const W=920, H=300, padL=38, padR=22, padT=38, padB=32;
@@ -565,11 +638,13 @@ window.__initPainel = function(){
       return `<div class="wkh2"><span class="wkl2">${s.lab}</span><span class="wkv2">${txt}</span></div>`;
     }).join('');
 
+    const ehVigente=(mes===mesVigente());
+    const tagParcial=ehVigente?` <span class="mesParcialTag">· parcial, até ${DATA_CORTE}</span>`:'';
     document.getElementById('pd_mes_semanal').innerHTML = `
       <div class="mesDetalheBox">
         <div class="mesDetalheHead">
-          <div class="wt">Evolução semanal · ${mn}</div>
-          <button class="mesFechar" id="mesFecharBtn">✕ fechar ${mn}</button>
+          <div class="wt">Evolução semanal · ${mn}${tagParcial}</div>
+          ${ehVigente?'':`<button class="mesFechar" id="mesFecharBtn">✕ fechar ${mn}</button>`}
         </div>
         <div class="wtsub">Linha escura = horas que a pessoa registrou · linha tracejada cinza = a meta daquela semana (${meta}h/dia × dias úteis). Semanas cortadas na abertura/fechamento do mês.</div>
         <div class="linechart">${svg}</div>
@@ -585,104 +660,27 @@ window.__initPainel = function(){
     document.querySelectorAll('#pd_hist .hcard').forEach(c=>c.classList.remove('sel'));
     const cardSel=[...document.querySelectorAll('#pd_hist .hcard.clicavel')].find(c=>parseInt(c.dataset.mes,10)===mes);
     if(cardSel) cardSel.classList.add('sel');
-    // botão fechar: limpa o detalhe e volta ao normal (só cardzinhos + jul-set)
-    document.getElementById('mesFecharBtn').addEventListener('click',()=>{
-      document.getElementById('pd_mes_semanal').innerHTML='';
-      document.querySelectorAll('#pd_hist .hcard').forEach(c=>c.classList.remove('sel'));
-    });
-    document.getElementById('pd_mes_semanal').scrollIntoView({behavior:'smooth', block:'nearest'});
+    // botão fechar (só nos meses não-vigentes): volta a abrir o mês vigente
+    const btnFechar=document.getElementById('mesFecharBtn');
+    if(btnFechar){
+      btnFechar.addEventListener('click',()=>{
+        const vig=mesVigente();
+        if(vig!=null){ renderDetalheMesSemanal(nome, meta, vig); }
+        else { document.getElementById('pd_mes_semanal').innerHTML=''; document.querySelectorAll('#pd_hist .hcard').forEach(c=>c.classList.remove('sel')); }
+      });
+    }
   }
 
-  // clique numa PESSOA -> modal resumo semana a semana
+  // clique numa PESSOA -> modal com a fileira de meses clicáveis (mês vigente já aberto)
   const modal=document.getElementById('pdetail');
   function openPerson(nome){
     const v=D.colaboradores[nome]; if(!v) return;
-    const labels=D.semanas.labels;
-    const horasSem=(D.semanas.horas&&D.semanas.horas[nome])||[];
-    const duSem=D.semanas.dias_uteis||[];
     const meta=v.meta;
     document.getElementById('pd_name').textContent=nome;
     document.getElementById('pd_sub').textContent=`${v.area} · ${v.cargo||''} · meta ${meta}h/dia`;
-    renderHistoricoMensal(nome, meta);
-    // meses: horas registradas em destaque + meta CHEIA do mês (dias úteis do mês inteiro × h/dia)
-    // setembro usa 21 dias úteis (mês inteiro, feriado 07/09 descontado); a tag "parcial" avisa que o registrado ainda não fechou
-    const DU_MES_CHEIO={Julho:23, Agosto:21, Setembro:21};
-    document.getElementById('pd_months').innerHTML=['Julho','Agosto','Setembro'].map(mn=>{
-      const h=v.horas[mn], du=DU_MES_CHEIO[mn], deveria=meta*du, parcial=(mn==='Setembro');
-      return `<div class="pmon${parcial?' parcial':''}"><div class="mn">${mn}</div>
-        <div class="mp" style="color:#2e9e6b">${Math.round(h)}h <span class="mpl">registradas</span></div>
-        <div class="mh">meta: ${du} dias úteis × ${meta} horas = <b>${Math.round(deveria)}h</b></div>
-        ${parcial?`<div class="ptag">parcial · só até ${DATA_CORTE}</div>`:''}</div>`;
-    }).join('');
-
-    // === GRÁFICO DE LINHA SEMANAL (horas registradas vs linha da meta) ===
-    const semanas=labels.map((lab,i)=>{
-      const feito=horasSem[i]||0;
-      const esperado=meta*(duSem[i]||0);
-      const pct=esperado>0? feito/esperado*100 : 0;
-      const cls=feito<=0?'zero':(pct>=97.5?'hit':'miss');
-      return {lab, feito, esperado, pct, cls};
-    });
-    // gráfico deitado (paisagem): largo e baixo, escala pela largura (viewBox), não rola horizontal
-    const maxH=Math.max(...semanas.map(s=>Math.max(s.feito,s.esperado)),1)*1.18;
-    const n=semanas.length;
-    const W=1040, H=300, padL=40, padR=24, padT=38, padB=32;
-    const innerW=W-padL-padR, innerH=H-padT-padB;
-    const xAt=i=> padL + (n<=1?innerW/2 : innerW*i/(n-1));
-    const yAt=h=> padT + innerH*(1 - h/maxH);
-    // grades horizontais de referência (0, e alguns níveis de horas) — mais escuras/visíveis
-    const step = maxH>50?10:5;
-    let grid='';
-    for(let g=0; g<=maxH; g+=step){
-      const y=yAt(g);
-      grid+=`<line x1="${padL}" y1="${y.toFixed(1)}" x2="${W-padR}" y2="${y.toFixed(1)}" stroke="#cdd7e0" stroke-width="1"/>`+
-            `<text x="${padL-8}" y="${(y+3).toFixed(1)}" text-anchor="end" font-size="11" font-weight="600" fill="#6f8aa0">${g}h</text>`;
-    }
-    const ptsFeito=semanas.map((s,i)=>`${xAt(i).toFixed(1)},${yAt(s.feito).toFixed(1)}`).join(' ');
-    const ptsMeta=semanas.map((s,i)=>`${xAt(i).toFixed(1)},${yAt(s.esperado).toFixed(1)}`).join(' ');
-    const dots=semanas.map((s,i)=>{
-      const col=s.cls==='hit'?'#2e9e6b':(s.cls==='miss'?'#d15757':'#c3cdd6');
-      return `<circle cx="${xAt(i).toFixed(1)}" cy="${yAt(s.feito).toFixed(1)}" r="5.5" fill="${col}" stroke="#fff" stroke-width="2"/>`;
-    }).join('');
-    const valLabels=semanas.map((s,i)=>{
-      const y=yAt(s.feito)-12;
-      const col=s.cls==='hit'?'#2e9e6b':(s.cls==='miss'?'#d15757':'#93a6b6');
-      return `<text x="${xAt(i).toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" font-size="12" font-weight="800" fill="${col}">${Math.round(s.feito)}h</text>`;
-    }).join('');
-    // datas no eixo x (início de cada semana; cabe bem no modal largo)
-    const xlabels=semanas.map((s,i)=>{
-      const ini=s.lab.split(' a ')[0]; // só o início da semana no eixo (ex: 07/09)
-      return `<text x="${xAt(i).toFixed(1)}" y="${H-10}" text-anchor="middle" font-size="10.5" fill="#7a90a2" font-weight="600">${ini}</text>`;
-    }).join('');
-    const svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet" style="display:block">
-      ${grid}
-      <polyline points="${ptsMeta}" fill="none" stroke="#9fb3c4" stroke-width="2.5" stroke-dasharray="6 5"/>
-      <polyline points="${ptsFeito}" fill="none" stroke="#16324f" stroke-width="3"/>
-      ${dots}${valLabels}${xlabels}
-    </svg>`;
-    // lista de horas por semana, texto por extenso
-    const lista=semanas.map((s,i)=>{
-      const cor=s.cls==='hit'?'#2e9e6b':(s.cls==='miss'?'#d15757':'#93a6b6');
-      const dias=duSem[i]||0;
-      const txt=s.feito<=0
-        ? `não registrou · meta da semana ${Math.round(s.esperado)}h`
-        : `<b style="color:${cor}">${Math.round(s.feito)}h registradas</b> de ${Math.round(s.esperado)}h da meta da semana (${dias} ${dias===1?'dia':'dias'})`;
-      return `<div class="wkh2"><span class="wkl2">${s.lab}</span><span class="wkv2">${txt}</span></div>`;
-    }).join('');
-
-    document.getElementById('pd_weeks').innerHTML=`
-      <div class="wt">Evolução semana a semana · horas registradas</div>
-      <div class="wtsub">Linha escura = horas que a pessoa registrou · linha tracejada cinza = a meta daquela semana (${meta}h/dia × dias úteis). Ponto verde = bateu a meta, vermelho = ficou abaixo. (* setembro parcial, até ${DATA_CORTE})</div>
-      <div class="linechart">${svg}</div>
-      <div class="wklegend">
-        <span><i style="background:#16324f;border-radius:2px"></i> registrou</span>
-        <span><i style="background:#9fb3c4;border-radius:2px"></i> meta da semana</span>
-        <span><i style="background:#2e9e6b"></i> bateu</span>
-        <span><i style="background:#d15757"></i> abaixo</span>
-      </div>
-      <div class="wklist">${lista}</div>`;
+    renderHistoricoMensal(nome, meta); // monta todos os meses e já abre o vigente
     modal.classList.add('open');
-    document.querySelector('.pdweeks').scrollTop=0;
+    document.querySelector('.pdbox').scrollTop=0;
   }
   function bindPeople(){
     document.querySelectorAll('.prow[data-nome]').forEach(r=>{
