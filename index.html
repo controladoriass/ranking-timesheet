@@ -123,7 +123,7 @@ body{background:linear-gradient(180deg,#f7f9fb 0%, var(--bg) 100%) fixed;color:v
 .pdhead .pclose{background:var(--bg);border:1px solid var(--line);width:34px;height:34px;border-radius:10px;cursor:pointer;font-size:18px;color:var(--ink2);flex:0 0 auto}
 .pdhead .pclose:hover{color:var(--navy);border-color:var(--gold)}
 /* histórico mensal jan-jul (cardzinhos enfileirados) */
-.pdhist{padding:18px 26px 4px}
+.pdhist{padding:18px 26px 20px;overflow-y:auto;flex:1 1 auto}
 .pdhist .ht{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);font-weight:700;margin-bottom:4px}
 .pdhist .hsub{font-size:11px;color:var(--ink3);margin-bottom:12px}
 .hrow{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px}
@@ -560,14 +560,15 @@ window.__initPainel = function(){
 
     // clique no cardzinho clicável -> abre o detalhe semanal daquele mês
     box.querySelectorAll('.hcard.clicavel').forEach(c=>{
-      c.addEventListener('click', ()=>renderDetalheMesSemanal(nome, meta, parseInt(c.dataset.mes,10)));
+      c.addEventListener('click', ()=>renderDetalheMesSemanal(nome, meta, parseInt(c.dataset.mes,10), true));
     });
     // mês vigente abre automaticamente
     if(vig!=null){ renderDetalheMesSemanal(nome, meta, vig); }
   }
 
   // detalhe semanal de UM mês — funciona para jan-jun (histórico) E jul+ (bloco semanal)
-  function renderDetalheMesSemanal(nome, meta, mes){
+  // rolar=true rola o modal até o gráfico (usar em clique manual, não na abertura automática)
+  function renderDetalheMesSemanal(nome, meta, mes, rolar){
     const hist=D.historico_mensal;
     const mn=NOME_MES_NUM[mes];
     const infoAcomp={}; mesesAcompanhados().forEach(x=>infoAcomp[x.mes]=x);
@@ -665,10 +666,12 @@ window.__initPainel = function(){
     if(btnFechar){
       btnFechar.addEventListener('click',()=>{
         const vig=mesVigente();
-        if(vig!=null){ renderDetalheMesSemanal(nome, meta, vig); }
+        if(vig!=null){ renderDetalheMesSemanal(nome, meta, vig, true); }
         else { document.getElementById('pd_mes_semanal').innerHTML=''; document.querySelectorAll('#pd_hist .hcard').forEach(c=>c.classList.remove('sel')); }
       });
     }
+    // num clique manual num mês, rola até o gráfico/resumo pra ficar visível
+    if(rolar){ document.getElementById('pd_mes_semanal').scrollIntoView({behavior:'smooth', block:'start'}); }
   }
 
   // clique numa PESSOA -> modal com a fileira de meses clicáveis (mês vigente já aberto)
